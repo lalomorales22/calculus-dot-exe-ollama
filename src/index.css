@@ -8,21 +8,41 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* KaTeX styling for dark mode */
+/* KaTeX styling for both light and dark modes */
+.katex {
+  color: black !important;
+}
+
 .dark .katex {
   color: white !important;
+}
+
+.katex .mord {
+  color: black !important;
 }
 
 .dark .katex .mord {
   color: white !important;
 }
 
+.katex .mbin {
+  color: #3b82f6 !important;
+}
+
 .dark .katex .mbin {
   color: #60a5fa !important;
 }
 
+.katex .mrel {
+  color: #3b82f6 !important;
+}
+
 .dark .katex .mrel {
   color: #60a5fa !important;
+}
+
+.katex .mop {
+  color: #059669 !important;
 }
 
 .dark .katex .mop {
