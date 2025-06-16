@@ -10,7 +10,11 @@ interface Message {
   isStreaming?: boolean;
 }
 
-const AIAssistant: React.FC = () => {
+interface AIAssistantProps {
+  width: number;
+}
+
+const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -147,7 +151,10 @@ const AIAssistant: React.FC = () => {
   }
 
   return (
-    <div className="w-80 bg-white dark:bg-black border-l-2 border-blue-500 flex flex-col transition-colors duration-300 fixed right-0 top-0 h-screen">
+    <div 
+      className="bg-white dark:bg-black border-l-2 border-blue-500 flex flex-col transition-all duration-200 fixed right-0 top-0 h-screen"
+      style={{ width: `${width}px` }}
+    >
       {/* Header */}
       <div className="p-4 border-b-2 border-blue-500 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-2">
@@ -222,6 +229,8 @@ const AIAssistant: React.FC = () => {
               Status: {isConnected ? 'Connected' : 'Disconnected'}
               <br />
               Models: {availableModels.length}
+              <br />
+              Width: {width}px
             </div>
           </div>
         </div>
