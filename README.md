@@ -1,8 +1,8 @@
 # CALCULUS.EXE - 8-Bit Learning System
 
 A comprehensive calculus reference and tutoring application with an integrated AI assistant powered by Ollama. Features a retro 8-bit aesthetic with complete formulas, theorems, and concepts for all 7 calculus modules.
+![Screenshot 2025-06-16 at 12 36 41 PM](https://github.com/user-attachments/assets/1b04078d-0b01-4670-9a16-0204e5526786)
 
-![Calculus.exe Screenshot](https://via.placeholder.com/800x400/000000/3B82F6?text=CALCULUS.EXE+-+8-BIT+LEARNING+SYSTEM)
 
 ## 🎮 Features
 
