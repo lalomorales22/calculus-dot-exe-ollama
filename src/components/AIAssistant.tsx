@@ -98,11 +98,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Enhanced vision model detection
+  // Enhanced vision model detection with proper Gemma 3 support
   const isVisionModel = (modelName: string): boolean => {
     // Check if we've already tested this model
     if (visionCapabilities[modelName] !== undefined) {
       return visionCapabilities[modelName];
+    }
+
+    const lowerName = modelName.toLowerCase();
+
+    // ALL Gemma models support vision (confirmed by user testing)
+    if (lowerName.includes('gemma')) {
+      return true;
     }
 
     // Known vision model patterns
@@ -112,36 +119,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
       'multimodal', 
       'bakllava',
       'moondream',
-      'gemma2:27b-instruct-v1.1-q4_0', // Specific Gemma vision model
-      'gemma2:9b-instruct-v1.1-q4_0',  // Another Gemma vision variant
       'minicpm-v',
       'cogvlm',
       'qwen-vl',
+      'qwen3', // Qwen 3 models often support vision
       'internvl',
-      'yi-vl'
+      'yi-vl',
+      'phi4', // Some Phi models support vision
+      'deepseek-r1' // DeepSeek R1 models may support vision
     ];
 
-    // Check for exact matches first
-    const exactMatch = visionKeywords.some(keyword => 
-      modelName.toLowerCase() === keyword.toLowerCase()
-    );
-
-    if (exactMatch) return true;
-
-    // Check for partial matches
-    const partialMatch = visionKeywords.some(keyword => 
-      modelName.toLowerCase().includes(keyword.toLowerCase())
-    );
-
-    // Special handling for Gemma models - many Gemma models support vision
-    const isGemmaVision = modelName.toLowerCase().includes('gemma') && (
-      modelName.includes('27b') || 
-      modelName.includes('9b') ||
-      modelName.includes('instruct') ||
-      modelName.includes('v1.1')
-    );
-
-    return partialMatch || isGemmaVision;
+    // Check for matches
+    return visionKeywords.some(keyword => lowerName.includes(keyword));
   };
 
   // Test if a model actually supports vision by attempting to send an image
@@ -682,7 +671,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
 
         {isConnected && isModelConnected && selectedImage && !getVisionStatus() && (
           <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
-            For image analysis, use a vision model like llava or gemma2:27b
+            For image analysis, use a vision model like llava or gemma
           </p>
         )}
       </div>
