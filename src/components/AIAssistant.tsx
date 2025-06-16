@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bot, Send, Minimize2, Settings, AlertCircle, CheckCircle } from 'lucide-react';
+import { InlineMath, BlockMath } from 'react-katex';
 import { OllamaService, OllamaModel, ChatMessage } from '../services/ollamaService';
 
 interface Message {
@@ -14,11 +15,56 @@ interface AIAssistantProps {
   width: number;
 }
 
+// Function to parse and format mathematical expressions
+const formatMathContent = (text: string) => {
+  // Split text by math delimiters while preserving the delimiters
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\begin\{[^}]+\}[\s\S]*?\\end\{[^}]+\})/);
+  
+  return parts.map((part, index) => {
+    // Block math ($$...$$)
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      const math = part.slice(2, -2).trim();
+      return (
+        <div key={index} className="my-3 p-3 border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+          <BlockMath math={math} />
+        </div>
+      );
+    }
+    
+    // Inline math ($...$)
+    if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+      const math = part.slice(1, -1).trim();
+      return (
+        <span key={index} className="inline-block px-2 py-1 mx-1 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+          <InlineMath math={math} />
+        </span>
+      );
+    }
+    
+    // LaTeX environments (like \begin{align}...\end{align})
+    if (part.includes('\\begin{') && part.includes('\\end{')) {
+      return (
+        <div key={index} className="my-3 p-3 border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+          <BlockMath math={part} />
+        </div>
+      );
+    }
+    
+    // Regular text - split by newlines and preserve formatting
+    return part.split('\n').map((line, lineIndex, lines) => (
+      <React.Fragment key={`${index}-${lineIndex}`}>
+        {line}
+        {lineIndex < lines.length - 1 && <br />}
+      </React.Fragment>
+    ));
+  });
+};
+
 const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hello! I'm your calculus tutor AI powered by Ollama. I'm here to help you understand limits, derivatives, integrals, and all the concepts in your modules. Ask me anything about calculus!",
+      text: "Hello! I'm your calculus tutor AI powered by Ollama. I'm here to help you understand limits, derivatives, integrals, and all the concepts in your modules. Ask me anything about calculus!\n\nFor mathematical expressions, I'll format them properly. For example:\n- Derivatives: $\\frac{d}{dx}[x^2] = 2x$\n- Integrals: $\\int x^2 dx = \\frac{x^3}{3} + C$\n- Limits: $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$",
       isUser: false,
       timestamp: new Date()
     }
@@ -245,10 +291,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                 ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 ml-auto' 
                 : 'border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800'
             }`}>
-              <p className="text-sm font-mono text-black dark:text-white leading-relaxed whitespace-pre-wrap">
-                {message.text}
-                {message.isStreaming && <span className="animate-pulse">▋</span>}
-              </p>
+              <div className="text-sm font-mono text-black dark:text-white leading-relaxed">
+                {message.isUser ? (
+                  // User messages - plain text
+                  <span className="whitespace-pre-wrap">{message.text}</span>
+                ) : (
+                  // AI messages - format math expressions
+                  <div className="whitespace-pre-wrap">
+                    {formatMathContent(message.text)}
+                    {message.isStreaming && <span className="animate-pulse">▋</span>}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
