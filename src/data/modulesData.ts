@@ -396,78 +396,127 @@ export const modulesData = [
       {
         title: "Chunk 1: Limits and Continuity Questions",
         explanation: "Practice problems covering limits, one-sided limits, continuity, and limit evaluation techniques.",
+        formulas: [
+          "\\lim_{x \\to 2} \\frac{x^2 - 4}{x - 2}",
+          "\\lim_{x \\to 0} \\frac{\\sin(3x)}{x}",
+          "f(x) = \\begin{cases} x^2 & \\text{if } x < 1 \\\\ 2x & \\text{if } x \\geq 1 \\end{cases}",
+          "\\lim_{x \\to \\infty} \\frac{3x^2 + 2x - 1}{x^2 - 5x + 6}",
+          "\\lim_{x \\to 0} x^2 \\sin\\left(\\frac{1}{x}\\right)"
+        ],
         concepts: [
-          "1. Find $\\lim_{x \\to 2} \\frac{x^2 - 4}{x - 2}$",
-          "2. Evaluate $\\lim_{x \\to 0} \\frac{\\sin(3x)}{x}$",
-          "3. Determine if $f(x) = \\begin{cases} x^2 & \\text{if } x < 1 \\\\ 2x & \\text{if } x \\geq 1 \\end{cases}$ is continuous at $x = 1$",
-          "4. Find $\\lim_{x \\to \\infty} \\frac{3x^2 + 2x - 1}{x^2 - 5x + 6}$",
-          "5. Use the Squeeze Theorem to find $\\lim_{x \\to 0} x^2 \\sin\\left(\\frac{1}{x}\\right)$"
+          "Find the limit using factoring and cancellation",
+          "Evaluate using the standard trigonometric limit",
+          "Determine if the piecewise function is continuous at x = 1",
+          "Find the limit at infinity using highest degree terms",
+          "Use the Squeeze Theorem with bounded sine function"
         ]
       },
       {
         title: "Chunk 2: Derivatives Questions",
         explanation: "Practice problems covering basic differentiation rules, product rule, quotient rule, and chain rule.",
+        formulas: [
+          "f(x) = 3x^4 - 2x^3 + 5x - 7",
+          "g(x) = (2x + 1)(x^2 - 3)",
+          "y = \\frac{x^2 + 1}{x - 2}",
+          "h(x) = \\sin(3x^2 + 1)",
+          "y = x^3 - 2x + 1 \\text{ at } x = 2"
+        ],
         concepts: [
-          "1. Find the derivative of $f(x) = 3x^4 - 2x^3 + 5x - 7$",
-          "2. Differentiate $g(x) = (2x + 1)(x^2 - 3)$ using the product rule",
-          "3. Find $\\frac{dy}{dx}$ if $y = \\frac{x^2 + 1}{x - 2}$",
-          "4. Differentiate $h(x) = \\sin(3x^2 + 1)$ using the chain rule",
-          "5. Find the equation of the tangent line to $y = x^3 - 2x + 1$ at $x = 2$"
+          "Find the derivative using the power rule",
+          "Differentiate using the product rule",
+          "Find dy/dx using the quotient rule",
+          "Differentiate using the chain rule",
+          "Find the equation of the tangent line"
         ]
       },
       {
         title: "Chunk 3: Advanced Differentiation Questions",
         explanation: "Practice problems covering implicit differentiation, related rates, and linear approximations.",
+        formulas: [
+          "x^2 + y^2 = 25",
+          "V = \\frac{4}{3}\\pi r^3, \\quad \\frac{dV}{dt} = 10 \\text{ cm}^3/\\text{s}",
+          "xy + \\sin(y) = x^2",
+          "\\sqrt{26} \\approx \\sqrt{25} + \\text{linear approximation}",
+          "x^2 + y^2 = 100, \\quad \\frac{dx}{dt} = 2 \\text{ ft/s}"
+        ],
         concepts: [
-          "1. Find $\\frac{dy}{dx}$ if $x^2 + y^2 = 25$ using implicit differentiation",
-          "2. A balloon is being inflated at a rate of 10 cm³/s. How fast is the radius increasing when the radius is 5 cm?",
-          "3. Find $\\frac{dy}{dx}$ if $xy + \\sin(y) = x^2$",
-          "4. Use linear approximation to estimate $\\sqrt{26}$",
-          "5. A ladder 10 ft long leans against a wall. If the bottom slides away at 2 ft/s, how fast is the top sliding down when the bottom is 6 ft from the wall?"
+          "Find dy/dx using implicit differentiation",
+          "How fast is the radius increasing when r = 5 cm?",
+          "Find dy/dx for the implicit equation",
+          "Use linear approximation to estimate the square root",
+          "How fast is the top sliding down when bottom is 6 ft from wall?"
         ]
       },
       {
         title: "Chunk 4: Exponential & Logarithmic Questions",
         explanation: "Practice problems covering exponential and logarithmic differentiation, inverse functions, and growth models.",
+        formulas: [
+          "f(x) = e^{2x} \\ln(x)",
+          "y = x^x",
+          "e^{2x} - 3e^x + 2 = 0",
+          "g(x) = \\arctan(2x + 1)",
+          "P(t) = 1000e^{0.05t}"
+        ],
         concepts: [
-          "1. Differentiate $f(x) = e^{2x} \\ln(x)$",
-          "2. Find $\\frac{dy}{dx}$ if $y = x^x$ using logarithmic differentiation",
-          "3. Solve for $x$: $e^{2x} - 3e^x + 2 = 0$",
-          "4. Find the derivative of $g(x) = \\arctan(2x + 1)$",
-          "5. A population grows according to $P(t) = 1000e^{0.05t}$. Find the growth rate when $t = 10$"
+          "Differentiate using product rule with exponential and logarithmic functions",
+          "Find dy/dx using logarithmic differentiation",
+          "Solve the exponential equation by substitution",
+          "Find the derivative of the inverse tangent function",
+          "Find the growth rate when t = 10 years"
         ]
       },
       {
         title: "Chunk 5: Applications of Derivatives Questions",
         explanation: "Practice problems covering L'Hôpital's rule, optimization, mean value theorem, and curve analysis.",
+        formulas: [
+          "\\lim_{x \\to 0} \\frac{e^x - 1 - x}{x^2}",
+          "f(x) = x^3 - 3x^2 + 2 \\text{ on } [0, 3]",
+          "f(x) = x^2 - 4x + 3 \\text{ on } [1, 4]",
+          "f(x) = x^4 - 4x^3",
+          "g(x) = x^3 - 6x^2 + 9x"
+        ],
         concepts: [
-          "1. Use L'Hôpital's rule to find $\\lim_{x \\to 0} \\frac{e^x - 1 - x}{x^2}$",
-          "2. Find the absolute maximum and minimum of $f(x) = x^3 - 3x^2 + 2$ on $[0, 3]$",
-          "3. Verify the Mean Value Theorem for $f(x) = x^2 - 4x + 3$ on $[1, 4]$",
-          "4. Find the intervals where $f(x) = x^4 - 4x^3$ is increasing and decreasing",
-          "5. Determine the concavity and inflection points of $g(x) = x^3 - 6x^2 + 9x$"
+          "Use L'Hôpital's rule to evaluate the indeterminate form",
+          "Find the absolute maximum and minimum values",
+          "Verify the Mean Value Theorem and find the value c",
+          "Find the intervals where the function is increasing and decreasing",
+          "Determine the concavity and inflection points"
         ]
       },
       {
         title: "Chunk 6: Optimization & Antiderivatives Questions",
         explanation: "Practice problems covering optimization problems, antiderivatives, and area approximations.",
+        formulas: [
+          "\\text{Perimeter} = 2l + 2w = 20",
+          "\\int (3x^2 - 4x + 5) dx",
+          "\\text{Area} = lw, \\quad l + w = 100",
+          "F'(x) = 2x + \\sin(x), \\quad F(0) = 3",
+          "y = x^2 \\text{ from } x = 0 \\text{ to } x = 2"
+        ],
         concepts: [
-          "1. Find the dimensions of a rectangle with perimeter 20 that has maximum area",
-          "2. Find the antiderivative: $\\int (3x^2 - 4x + 5) dx$",
-          "3. A farmer has 100 ft of fence to enclose a rectangular field against a barn. What dimensions maximize the area?",
-          "4. Find $F(x)$ if $F'(x) = 2x + \\sin(x)$ and $F(0) = 3$",
-          "5. Approximate the area under $y = x^2$ from $x = 0$ to $x = 2$ using 4 rectangles (right endpoints)"
+          "Find the dimensions of a rectangle with perimeter 20 that has maximum area",
+          "Find the antiderivative of the polynomial",
+          "What dimensions maximize the area of the field against the barn?",
+          "Find F(x) given the derivative and initial condition",
+          "Approximate the area using 4 rectangles with right endpoints"
         ]
       },
       {
         title: "Chunk 7: Definite Integrals Questions",
         explanation: "Practice problems covering definite integral evaluation, Fundamental Theorem of Calculus, and applications.",
+        formulas: [
+          "\\int_0^2 (x^2 + 3x - 1) dx",
+          "\\frac{d}{dx} \\int_1^{x^2} \\sin(t) dt",
+          "\\int_0^{\\pi/2} \\sin(x)\\cos(x) dx",
+          "y = x^2 \\text{ and } y = 4 \\text{ from } x = -2 \\text{ to } x = 2",
+          "\\int_{-1}^1 (x^3 + x) dx"
+        ],
         concepts: [
-          "1. Evaluate $\\int_0^2 (x^2 + 3x - 1) dx$",
-          "2. Find $\\frac{d}{dx} \\int_1^{x^2} \\sin(t) dt$",
-          "3. Use substitution to evaluate $\\int_0^{\\pi/2} \\sin(x)\\cos(x) dx$",
-          "4. Find the area between $y = x^2$ and $y = 4$ from $x = -2$ to $x = 2$",
-          "5. Evaluate $\\int_{-1}^1 (x^3 + x) dx$ and explain why the answer makes sense"
+          "Evaluate the definite integral using the Fundamental Theorem",
+          "Find the derivative using FTC Part 1 with chain rule",
+          "Use substitution u = sin(x) to evaluate the integral",
+          "Find the area between the parabola and horizontal line",
+          "Evaluate and explain why the answer makes sense (odd function)"
         ]
       }
     ]
