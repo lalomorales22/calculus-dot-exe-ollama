@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Send, Minimize2, Settings, AlertCircle, CheckCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Bot, Send, Minimize2, Settings, AlertCircle, CheckCircle, Upload, X, Image as ImageIcon, Wifi, WifiOff, Eye, EyeOff } from 'lucide-react';
 import { InlineMath, BlockMath } from 'react-katex';
 import { OllamaService, OllamaModel, ChatMessage } from '../services/ollamaService';
 
@@ -82,6 +82,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImageName, setSelectedImageName] = useState<string>('');
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isModelConnected, setIsModelConnected] = useState(false);
+  const [isConnectingModel, setIsConnectingModel] = useState(false);
+  const [modelConnectionError, setModelConnectionError] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -93,6 +96,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Check if model is vision-capable
+  const isVisionModel = (modelName: string): boolean => {
+    const visionKeywords = ['llava', 'vision', 'multimodal', 'bakllava', 'moondream'];
+    return visionKeywords.some(keyword => modelName.toLowerCase().includes(keyword));
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,10 +121,35 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
         }
       } else {
         setConnectionError('Ollama is not running. Please start Ollama and try again.');
+        setIsModelConnected(false);
       }
     } catch (error) {
       setIsConnected(false);
+      setIsModelConnected(false);
       setConnectionError(error instanceof Error ? error.message : 'Failed to connect to Ollama');
+    }
+  };
+
+  const connectToModel = async () => {
+    if (!selectedModel || !isConnected) return;
+
+    setIsConnectingModel(true);
+    setModelConnectionError('');
+
+    try {
+      // Test the model by sending a simple message
+      const testMessages: ChatMessage[] = [
+        { role: 'user', content: 'Hello, are you working?' }
+      ];
+
+      await OllamaService.sendChatMessage(selectedModel, testMessages);
+      setIsModelConnected(true);
+      setModelConnectionError('');
+    } catch (error) {
+      setIsModelConnected(false);
+      setModelConnectionError(error instanceof Error ? error.message : 'Failed to connect to model');
+    } finally {
+      setIsConnectingModel(false);
     }
   };
 
@@ -177,7 +211,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   };
 
   const handleSendMessage = async () => {
-    if ((!inputText.trim() && !selectedImage) || !selectedModel || isLoading) return;
+    if ((!inputText.trim() && !selectedImage) || !selectedModel || isLoading || !isModelConnected) return;
 
     const userMessage: Message = {
       id: messages.length + 1,
@@ -303,11 +337,23 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
         <div className="flex items-center space-x-2">
           <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h3 className="font-bold text-black dark:text-white font-mono">CALC TUTOR AI</h3>
-          {isConnected ? (
-            <CheckCircle className="w-4 h-4 text-green-500" />
-          ) : (
-            <AlertCircle className="w-4 h-4 text-red-500" />
-          )}
+          <div className="flex items-center space-x-1">
+            {isConnected ? (
+              <CheckCircle className="w-4 h-4 text-green-500" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-red-500" />
+            )}
+            {isModelConnected ? (
+              <Wifi className="w-4 h-4 text-green-500" />
+            ) : (
+              <WifiOff className="w-4 h-4 text-gray-400" />
+            )}
+            {selectedModel && isVisionModel(selectedModel) ? (
+              <Eye className="w-4 h-4 text-purple-500" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-gray-400" />
+            )}
+          </div>
         </div>
         <div className="flex space-x-1">
           <button
@@ -335,7 +381,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
               </label>
               <select
                 value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
+                onChange={(e) => {
+                  setSelectedModel(e.target.value);
+                  setIsModelConnected(false); // Reset connection status when model changes
+                  setModelConnectionError('');
+                }}
                 className="w-full p-2 border-2 border-blue-500 bg-white dark:bg-black text-black dark:text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
                 disabled={!isConnected}
               >
@@ -358,6 +408,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
               >
                 REFRESH
               </button>
+              <button
+                onClick={connectToModel}
+                disabled={!selectedModel || !isConnected || isConnectingModel}
+                className="flex-1 p-2 border-2 border-green-500 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:border-gray-500 text-white font-mono text-xs transition-colors duration-200"
+              >
+                {isConnectingModel ? 'CONNECTING...' : 'CONNECT'}
+              </button>
             </div>
 
             {connectionError && (
@@ -368,14 +425,43 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
               </div>
             )}
 
-            <div className="text-xs font-mono text-gray-600 dark:text-gray-400">
-              Status: {isConnected ? 'Connected' : 'Disconnected'}
-              <br />
-              Models: {availableModels.length}
-              <br />
-              Width: {width}px
-              <br />
-              Vision: {selectedModel.includes('llava') || selectedModel.includes('vision') ? 'Enabled' : 'Check model'}
+            {modelConnectionError && (
+              <div className="p-2 border-2 border-red-500 bg-red-50 dark:bg-red-950">
+                <p className="text-xs font-mono text-red-700 dark:text-red-300">
+                  Model Error: {modelConnectionError}
+                </p>
+              </div>
+            )}
+
+            <div className="p-2 border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <div className="text-xs font-mono text-gray-600 dark:text-gray-400 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>Ollama:</span>
+                  <span className={isConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                    {isConnected ? 'Connected' : 'Disconnected'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Model:</span>
+                  <span className={isModelConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                    {isModelConnected ? 'Ready' : 'Not Connected'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Vision:</span>
+                  <span className={selectedModel && isVisionModel(selectedModel) ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'}>
+                    {selectedModel && isVisionModel(selectedModel) ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Models:</span>
+                  <span>{availableModels.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Width:</span>
+                  <span>{width}px</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -456,13 +542,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-            placeholder={isConnected ? "Ask about calculus or upload an image..." : "Connect to Ollama first..."}
-            disabled={!isConnected || isLoading}
+            placeholder={isModelConnected ? "Ask about calculus or upload an image..." : "Connect to model first..."}
+            disabled={!isConnected || !isModelConnected || isLoading}
             className="flex-1 p-2 border-2 border-blue-500 bg-white dark:bg-black text-black dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={!isConnected || isLoading}
+            disabled={!isConnected || !isModelConnected || isLoading}
             className="p-2 border-2 border-blue-500 bg-white dark:bg-black hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-600 dark:text-blue-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Upload image"
           >
@@ -470,7 +556,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
           </button>
           <button
             onClick={handleSendMessage}
-            disabled={!isConnected || isLoading || (!inputText.trim() && !selectedImage)}
+            disabled={!isConnected || !isModelConnected || isLoading || (!inputText.trim() && !selectedImage)}
             className="p-2 border-2 border-blue-500 bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
@@ -492,7 +578,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
           </p>
         )}
 
-        {isConnected && !selectedModel.includes('llava') && !selectedModel.includes('vision') && (
+        {isConnected && !isModelConnected && (
+          <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
+            Click CONNECT to test the selected model
+          </p>
+        )}
+
+        {isConnected && isModelConnected && selectedImage && !isVisionModel(selectedModel) && (
           <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
             For image analysis, use a vision model like llava
           </p>
