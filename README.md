@@ -1,21 +1,23 @@
 # CALCULUS.EXE - 8-Bit Learning System
 
-A comprehensive calculus reference and tutoring application with an integrated AI assistant powered by Ollama. Features a retro 8-bit aesthetic with complete formulas, theorems, and concepts for all 7 calculus modules.
-![Screenshot 2025-06-16 at 1 34 14 PM](https://github.com/user-attachments/assets/4e4c366a-07ce-4b65-8b33-e94872ebfe1e)
+A comprehensive calculus reference and tutoring application with an integrated AI assistant powered by Ollama. Features a retro 8-bit aesthetic with complete formulas, theorems, and concepts for all 8 calculus chunks including sample practice questions.
 
-
+![Screenshot 2025-06-16 at 1 34 14 PM](https://github.com/user-attachments/assets/4e4c366a-07ce-4b65-8b33-e94872ebfe1e)
 
 ## 🎮 Features
 
-- **Complete Calculus Reference**: All 7 modules with formulas, theorems, and explanations
-- **AI Tutor Integration**: Powered by Ollama for personalized calculus help
+- **Complete Calculus Reference**: All 8 chunks with formulas, theorems, and explanations
+- **Sample Practice Questions**: Chunk 8 includes practice problems for all calculus topics
+- **AI Tutor Integration**: Powered by Ollama for personalized calculus help with vision support
+- **Image Analysis**: Upload mathematical problems, graphs, and diagrams for AI analysis
 - **8-Bit Retro Design**: Nostalgic gaming aesthetic with modern functionality
 - **LaTeX Formula Rendering**: Properly formatted mathematical expressions
-- **Dark/Light Mode**: Toggle between themes with persistent settings
-- **Responsive Design**: Works on desktop and mobile devices
+- **Resizable AI Sidebar**: Drag to resize the AI assistant panel
 - **Real-time Streaming**: AI responses stream in real-time for better UX
+- **Vision Model Support**: Automatic detection and testing of vision-capable models
+- **Responsive Design**: Works on desktop and mobile devices
 
-## 📚 Calculus Modules Covered
+## 📚 Calculus Chunks Covered
 
 1. **Limits and Continuity** - Function limits, one-sided limits, continuity theorems
 2. **Derivatives** - Rates of change, differentiation rules, basic formulas
@@ -24,6 +26,7 @@ A comprehensive calculus reference and tutoring application with an integrated A
 5. **Applications of Derivatives** - L'Hôpital's rule, optimization, mean value theorem
 6. **Optimization & Antiderivatives** - Optimization problems, antiderivatives, areas
 7. **Definite Integrals** - Definite integrals, evaluation techniques, Fundamental Theorem
+8. **Sample Questions** - Practice problems covering all chunks with detailed examples
 
 ## 🚀 Quick Start
 
@@ -74,6 +77,8 @@ Download from [ollama.ai](https://ollama.ai/download)
 # Recommended models for calculus tutoring:
 ollama pull llama2:7b          # Good balance of speed and quality
 ollama pull mistral:7b         # Fast and efficient
+ollama pull gemma:7b           # Excellent for math with vision support
+ollama pull llava:7b           # Vision model for image analysis
 ollama pull codellama:7b       # Good for mathematical reasoning
 ollama pull llama2:13b         # Higher quality (requires more RAM)
 ```
@@ -90,18 +95,30 @@ The AI assistant will automatically connect when Ollama is running on `localhost
 
 ### Calculus Reference System
 
-- **Browse Modules**: Click on any module header to expand and view content
+- **Browse Chunks**: Click on any chunk header to expand and view content
 - **View Formulas**: All mathematical expressions are rendered with LaTeX
 - **Study Concepts**: Each topic includes explanations and key concepts
+- **Practice Problems**: Chunk 8 provides sample questions for all topics
 - **Navigate Easily**: Collapsible sections for organized learning
 
 ### AI Tutor Assistant
 
 1. **Connect**: Ensure Ollama is running and models are downloaded
 2. **Select Model**: Use the settings gear to choose your preferred model
-3. **Ask Questions**: Type calculus questions in natural language
-4. **Get Help**: Receive step-by-step explanations and solutions
-5. **Stream Responses**: Watch answers appear in real-time
+3. **Test Connection**: Click CONNECT to verify the model is working
+4. **Ask Questions**: Type calculus questions in natural language
+5. **Upload Images**: Drag and drop or upload mathematical problems and diagrams
+6. **Get Help**: Receive step-by-step explanations and solutions
+7. **Stream Responses**: Watch answers appear in real-time
+8. **Resize Sidebar**: Drag the divider to adjust the AI assistant width
+
+### Vision Model Features
+
+- **Automatic Detection**: The app detects which models support vision
+- **Image Analysis**: Upload photos of mathematical problems, graphs, or handwritten work
+- **Problem Solving**: Get step-by-step solutions for visual math problems
+- **Graph Analysis**: Analyze function plots and mathematical diagrams
+- **Handwriting Recognition**: Get help with handwritten calculus work
 
 ### Example AI Interactions
 
@@ -113,9 +130,13 @@ AI: "The Chain Rule is crucial for composite functions! If y = f(g(x)),
 User: "How do I find the limit of sin(x)/x as x approaches 0?"
 AI: "This is a famous limit! As x→0, sin(x)/x = 1. Here's why..."
 
-User: "Help me with related rates problems"
-AI: "Related rates problems involve finding how fast one quantity 
-     changes with respect to another..."
+User: [Uploads image of a calculus problem]
+AI: "I can see this is a related rates problem involving a cone. 
+     Let me break down the solution step by step..."
+
+User: "Help me with optimization problems from Chunk 6"
+AI: "Optimization problems follow a systematic approach. First, identify 
+     what you're maximizing or minimizing..."
 ```
 
 ## 🛠️ Development
@@ -125,11 +146,9 @@ AI: "Related rates problems involve finding how fast one quantity
 ```
 src/
 ├── components/          # React components
-│   ├── Header.tsx      # App header with theme toggle
-│   ├── ModuleCard.tsx  # Expandable module cards
-│   └── AIAssistant.tsx # AI chat interface
-├── contexts/           # React contexts
-│   └── ThemeContext.tsx # Dark/light mode management
+│   ├── Header.tsx      # App header with logo
+│   ├── ModuleCard.tsx  # Expandable chunk cards
+│   └── AIAssistant.tsx # AI chat interface with vision support
 ├── data/              # Static data
 │   └── modulesData.ts # Calculus content and formulas
 ├── services/          # External services
@@ -153,23 +172,24 @@ npm run lint     # Run ESLint
 - **Styling**: Tailwind CSS + Custom 8-bit theme
 - **Math Rendering**: KaTeX + react-katex
 - **Icons**: Lucide React
-- **AI Integration**: Ollama REST API
+- **AI Integration**: Ollama REST API with vision support
 - **Build Tool**: Vite
 
 ## 🎨 Customization
 
 ### Themes
 
-The app supports light and dark modes with an 8-bit aesthetic:
+The app features a dark 8-bit aesthetic with:
 
 - **Colors**: Blue accent colors (#3B82F6) with black/white base
 - **Typography**: JetBrains Mono for retro computing feel
 - **Borders**: Pixelated 2px borders throughout
 - **Scrollbars**: Custom styled to match theme
+- **Animations**: Smooth transitions and hover effects
 
 ### Adding Content
 
-To add new calculus topics or modules:
+To add new calculus topics or chunks:
 
 1. Edit `src/data/modulesData.ts`
 2. Follow the existing structure for topics
@@ -192,28 +212,38 @@ Modify the system prompt in `src/services/ollamaService.ts` to:
 - Ensure Ollama is installed and running (`ollama serve`)
 - Check that port 11434 is not blocked
 - Verify at least one model is downloaded
+- Click the CONNECT button to test the model
+
+**Vision features not working:**
+- Use a vision-capable model (gemma, llava, etc.)
+- Check the vision status indicator (eye icon)
+- Ensure images are under 10MB
+- Try different image formats (PNG, JPG)
 
 **Formulas not rendering:**
 - Check browser console for KaTeX errors
 - Ensure LaTeX syntax is correct in modulesData.ts
 - Verify KaTeX CSS is loaded
 
-**Theme not persisting:**
-- Check browser localStorage permissions
-- Clear browser cache and reload
+**Performance issues:**
+- Use smaller models (7B) for faster responses
+- Reduce image sizes before uploading
+- Close unused browser tabs
 
 ### Performance Tips
 
 - **Model Selection**: Smaller models (7B) are faster but less capable
 - **Memory Usage**: Larger models require more RAM
 - **Response Speed**: Adjust temperature and max_tokens in ollamaService.ts
+- **Image Size**: Compress images before uploading for faster analysis
 
 ## 📱 Mobile Support
 
 The app is fully responsive and works on mobile devices:
 - Touch-friendly interface
-- Collapsible AI assistant
+- Resizable AI assistant sidebar
 - Optimized formula rendering
+- Drag and drop image support
 - Swipe gestures supported
 
 ## 🤝 Contributing
@@ -231,6 +261,7 @@ The app is fully responsive and works on mobile devices:
 - Add proper LaTeX formatting for math
 - Test AI assistant integration
 - Update documentation as needed
+- Include sample questions for new topics
 
 ## 📄 License
 
@@ -238,7 +269,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Ollama** - Local LLM inference
+- **Ollama** - Local LLM inference with vision support
 - **KaTeX** - Mathematical formula rendering
 - **Tailwind CSS** - Utility-first CSS framework
 - **Lucide** - Beautiful icon library
@@ -254,4 +285,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for calculus students everywhere**
 
-*Transform your calculus learning with the power of AI and retro computing aesthetics!*
+*Transform your calculus learning with the power of AI, vision analysis, and retro computing aesthetics!*
