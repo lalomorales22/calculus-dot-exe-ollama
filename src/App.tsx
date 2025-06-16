@@ -66,7 +66,7 @@ function App() {
                 CALCULUS REFERENCE SYSTEM
               </h1>
               <p className="text-gray-600 dark:text-gray-400 font-mono">
-                Complete formulas, theorems, and concepts for all 7 modules
+                Complete formulas, theorems, and concepts for all 8 chunks
               </p>
             </div>
             
@@ -85,11 +85,12 @@ function App() {
                 SYSTEM INFO
               </h2>
               <p className="text-sm text-gray-700 dark:text-gray-300 font-mono">
-                • Click module headers to expand content<br/>
+                • Click chunk headers to expand content<br/>
                 • Use AI assistant for personalized help<br/>
                 • Toggle light/dark mode in header<br/>
                 • All formulas rendered with LaTeX<br/>
-                • Drag the sidebar divider to resize
+                • Drag the sidebar divider to resize<br/>
+                • Upload images to AI for problem analysis
               </p>
             </div>
           </main>

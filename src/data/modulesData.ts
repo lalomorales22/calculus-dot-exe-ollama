@@ -1,6 +1,6 @@
 export const modulesData = [
   {
-    title: "MODULE 1: LIMITS AND CONTINUITY",
+    title: "CHUNK 1: LIMITS AND CONTINUITY",
     topics: [
       {
         title: "The Limit of a Function",
@@ -62,7 +62,7 @@ export const modulesData = [
     ]
   },
   {
-    title: "MODULE 2: DERIVATIVES",
+    title: "CHUNK 2: DERIVATIVES",
     topics: [
       {
         title: "Derivatives and Rates of Change",
@@ -129,7 +129,7 @@ export const modulesData = [
     ]
   },
   {
-    title: "MODULE 3: ADVANCED DIFFERENTIATION",
+    title: "CHUNK 3: ADVANCED DIFFERENTIATION",
     topics: [
       {
         title: "Implicit Differentiation",
@@ -179,7 +179,7 @@ export const modulesData = [
     ]
   },
   {
-    title: "MODULE 4: EXPONENTIAL & LOGARITHMIC FUNCTIONS",
+    title: "CHUNK 4: EXPONENTIAL & LOGARITHMIC FUNCTIONS",
     topics: [
       {
         title: "Exponential Functions",
@@ -229,7 +229,7 @@ export const modulesData = [
     ]
   },
   {
-    title: "MODULE 5: APPLICATIONS OF DERIVATIVES",
+    title: "CHUNK 5: APPLICATIONS OF DERIVATIVES",
     topics: [
       {
         title: "L'Hôpital's Rule",
@@ -293,7 +293,7 @@ export const modulesData = [
     ]
   },
   {
-    title: "MODULE 6: OPTIMIZATION & ANTIDERIVATIVES",
+    title: "CHUNK 6: OPTIMIZATION & ANTIDERIVATIVES",
     topics: [
       {
         title: "Optimization Problems",
@@ -340,7 +340,7 @@ export const modulesData = [
     ]
   },
   {
-    title: "MODULE 7: DEFINITE INTEGRALS",
+    title: "CHUNK 7: DEFINITE INTEGRALS",
     topics: [
       {
         title: "The Definite Integral",
@@ -386,6 +386,88 @@ export const modulesData = [
           "Net change theorem",
           "Average value of a function",
           "Applications to physics and geometry"
+        ]
+      }
+    ]
+  },
+  {
+    title: "CHUNK 8: SAMPLE QUESTIONS",
+    topics: [
+      {
+        title: "Chunk 1: Limits and Continuity Questions",
+        explanation: "Practice problems covering limits, one-sided limits, continuity, and limit evaluation techniques.",
+        concepts: [
+          "1. Find $\\lim_{x \\to 2} \\frac{x^2 - 4}{x - 2}$",
+          "2. Evaluate $\\lim_{x \\to 0} \\frac{\\sin(3x)}{x}$",
+          "3. Determine if $f(x) = \\begin{cases} x^2 & \\text{if } x < 1 \\\\ 2x & \\text{if } x \\geq 1 \\end{cases}$ is continuous at $x = 1$",
+          "4. Find $\\lim_{x \\to \\infty} \\frac{3x^2 + 2x - 1}{x^2 - 5x + 6}$",
+          "5. Use the Squeeze Theorem to find $\\lim_{x \\to 0} x^2 \\sin\\left(\\frac{1}{x}\\right)$"
+        ]
+      },
+      {
+        title: "Chunk 2: Derivatives Questions",
+        explanation: "Practice problems covering basic differentiation rules, product rule, quotient rule, and chain rule.",
+        concepts: [
+          "1. Find the derivative of $f(x) = 3x^4 - 2x^3 + 5x - 7$",
+          "2. Differentiate $g(x) = (2x + 1)(x^2 - 3)$ using the product rule",
+          "3. Find $\\frac{dy}{dx}$ if $y = \\frac{x^2 + 1}{x - 2}$",
+          "4. Differentiate $h(x) = \\sin(3x^2 + 1)$ using the chain rule",
+          "5. Find the equation of the tangent line to $y = x^3 - 2x + 1$ at $x = 2$"
+        ]
+      },
+      {
+        title: "Chunk 3: Advanced Differentiation Questions",
+        explanation: "Practice problems covering implicit differentiation, related rates, and linear approximations.",
+        concepts: [
+          "1. Find $\\frac{dy}{dx}$ if $x^2 + y^2 = 25$ using implicit differentiation",
+          "2. A balloon is being inflated at a rate of 10 cm³/s. How fast is the radius increasing when the radius is 5 cm?",
+          "3. Find $\\frac{dy}{dx}$ if $xy + \\sin(y) = x^2$",
+          "4. Use linear approximation to estimate $\\sqrt{26}$",
+          "5. A ladder 10 ft long leans against a wall. If the bottom slides away at 2 ft/s, how fast is the top sliding down when the bottom is 6 ft from the wall?"
+        ]
+      },
+      {
+        title: "Chunk 4: Exponential & Logarithmic Questions",
+        explanation: "Practice problems covering exponential and logarithmic differentiation, inverse functions, and growth models.",
+        concepts: [
+          "1. Differentiate $f(x) = e^{2x} \\ln(x)$",
+          "2. Find $\\frac{dy}{dx}$ if $y = x^x$ using logarithmic differentiation",
+          "3. Solve for $x$: $e^{2x} - 3e^x + 2 = 0$",
+          "4. Find the derivative of $g(x) = \\arctan(2x + 1)$",
+          "5. A population grows according to $P(t) = 1000e^{0.05t}$. Find the growth rate when $t = 10$"
+        ]
+      },
+      {
+        title: "Chunk 5: Applications of Derivatives Questions",
+        explanation: "Practice problems covering L'Hôpital's rule, optimization, mean value theorem, and curve analysis.",
+        concepts: [
+          "1. Use L'Hôpital's rule to find $\\lim_{x \\to 0} \\frac{e^x - 1 - x}{x^2}$",
+          "2. Find the absolute maximum and minimum of $f(x) = x^3 - 3x^2 + 2$ on $[0, 3]$",
+          "3. Verify the Mean Value Theorem for $f(x) = x^2 - 4x + 3$ on $[1, 4]$",
+          "4. Find the intervals where $f(x) = x^4 - 4x^3$ is increasing and decreasing",
+          "5. Determine the concavity and inflection points of $g(x) = x^3 - 6x^2 + 9x$"
+        ]
+      },
+      {
+        title: "Chunk 6: Optimization & Antiderivatives Questions",
+        explanation: "Practice problems covering optimization problems, antiderivatives, and area approximations.",
+        concepts: [
+          "1. Find the dimensions of a rectangle with perimeter 20 that has maximum area",
+          "2. Find the antiderivative: $\\int (3x^2 - 4x + 5) dx$",
+          "3. A farmer has 100 ft of fence to enclose a rectangular field against a barn. What dimensions maximize the area?",
+          "4. Find $F(x)$ if $F'(x) = 2x + \\sin(x)$ and $F(0) = 3$",
+          "5. Approximate the area under $y = x^2$ from $x = 0$ to $x = 2$ using 4 rectangles (right endpoints)"
+        ]
+      },
+      {
+        title: "Chunk 7: Definite Integrals Questions",
+        explanation: "Practice problems covering definite integral evaluation, Fundamental Theorem of Calculus, and applications.",
+        concepts: [
+          "1. Evaluate $\\int_0^2 (x^2 + 3x - 1) dx$",
+          "2. Find $\\frac{d}{dx} \\int_1^{x^2} \\sin(t) dt$",
+          "3. Use substitution to evaluate $\\int_0^{\\pi/2} \\sin(x)\\cos(x) dx$",
+          "4. Find the area between $y = x^2$ and $y = 4$ from $x = -2$ to $x = 2$",
+          "5. Evaluate $\\int_{-1}^1 (x^3 + x) dx$ and explain why the answer makes sense"
         ]
       }
     ]
