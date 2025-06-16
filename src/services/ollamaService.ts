@@ -14,6 +14,7 @@ export interface OllamaModel {
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  images?: string[]; // Base64 encoded images (without data URL prefix)
 }
 
 export interface OllamaChatResponse {
@@ -149,6 +150,23 @@ EXAMPLES OF PROPER FORMATTING:
 - "The fundamental theorem states: $$\\int_a^b f'(x) dx = f(b) - f(a)$$"
 - "For the limit $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$"
 
+IMAGE ANALYSIS CAPABILITIES:
+When users upload images, you can analyze:
+- Mathematical problems and equations
+- Graphs and function plots
+- Geometric diagrams and figures
+- Handwritten calculus work
+- Textbook problems and exercises
+- Calculator screens and outputs
+
+For image analysis:
+- Describe what you see in mathematical terms
+- Identify the specific calculus concepts involved
+- Provide step-by-step solutions if it's a problem
+- Explain any graphs, functions, or mathematical relationships
+- Point out errors in work if you see them
+- Suggest next steps or related concepts to explore
+
 TEACHING STYLE:
 - Explain concepts in clear, easy-to-understand language
 - Break down complex problems into step-by-step solutions
@@ -165,6 +183,7 @@ CAPABILITIES:
 - Provide step-by-step solutions with proper math formatting
 - Clarify mathematical concepts
 - Suggest practice approaches
+- Analyze uploaded images containing mathematical content
 
 Always be encouraging and focus on helping the student build genuine understanding of calculus concepts. Remember to format all mathematical expressions using proper LaTeX notation so they render beautifully in the interface.`;
   }

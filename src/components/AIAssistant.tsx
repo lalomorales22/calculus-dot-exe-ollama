@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Send, Minimize2, Settings, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bot, Send, Minimize2, Settings, AlertCircle, CheckCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { InlineMath, BlockMath } from 'react-katex';
 import { OllamaService, OllamaModel, ChatMessage } from '../services/ollamaService';
 
@@ -9,6 +9,8 @@ interface Message {
   isUser: boolean;
   timestamp: Date;
   isStreaming?: boolean;
+  image?: string; // Base64 encoded image
+  imageName?: string;
 }
 
 interface AIAssistantProps {
@@ -64,7 +66,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hello! I'm your calculus tutor AI powered by Ollama. I'm here to help you understand limits, derivatives, integrals, and all the concepts in your modules. Ask me anything about calculus!\n\nFor mathematical expressions, I'll format them properly. For example:\n- Derivatives: $\\frac{d}{dx}[x^2] = 2x$\n- Integrals: $\\int x^2 dx = \\frac{x^3}{3} + C$\n- Limits: $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$",
+      text: "Hello! I'm your calculus tutor AI powered by Ollama. I'm here to help you understand limits, derivatives, integrals, and all the concepts in your modules. Ask me anything about calculus!\n\nFor mathematical expressions, I'll format them properly. For example:\n- Derivatives: $\\frac{d}{dx}[x^2] = 2x$\n- Integrals: $\\int x^2 dx = \\frac{x^3}{3} + C$\n- Limits: $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$\n\nYou can also upload images or drag and drop them here to analyze mathematical problems, graphs, or diagrams!",
       isUser: false,
       timestamp: new Date()
     }
@@ -77,7 +79,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [connectionError, setConnectionError] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageName, setSelectedImageName] = useState<string>('');
+  const [isDragOver, setIsDragOver] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkConnection();
@@ -112,18 +119,82 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
     }
   };
 
+  const handleImageUpload = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      alert('Image size must be less than 10MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setSelectedImage(base64);
+      setSelectedImageName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(file => file.type.startsWith('image/'));
+    
+    if (imageFile) {
+      handleImageUpload(imageFile);
+    }
+  };
+
+  const removeSelectedImage = () => {
+    setSelectedImage(null);
+    setSelectedImageName('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSendMessage = async () => {
-    if (!inputText.trim() || !selectedModel || isLoading) return;
+    if ((!inputText.trim() && !selectedImage) || !selectedModel || isLoading) return;
 
     const userMessage: Message = {
       id: messages.length + 1,
-      text: inputText,
+      text: inputText || (selectedImage ? "Please analyze this image:" : ""),
       isUser: true,
-      timestamp: new Date()
+      timestamp: new Date(),
+      image: selectedImage || undefined,
+      imageName: selectedImageName || undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
+    setSelectedImage(null);
+    setSelectedImageName('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setIsLoading(true);
 
     // Create AI response message that will be updated as we stream
@@ -144,9 +215,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
         { role: 'system', content: OllamaService.getSystemPrompt() },
         ...messages.slice(-10).map(msg => ({
           role: msg.isUser ? 'user' as const : 'assistant' as const,
-          content: msg.text
+          content: msg.text,
+          images: msg.image ? [msg.image.split(',')[1]] : undefined // Remove data:image/...;base64, prefix
         })),
-        { role: 'user', content: inputText }
+        { 
+          role: 'user', 
+          content: inputText || "Please analyze this image and help me understand any mathematical concepts, problems, or diagrams shown.",
+          images: selectedImage ? [selectedImage.split(',')[1]] : undefined
+        }
       ];
 
       let fullResponse = '';
@@ -198,9 +274,30 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
 
   return (
     <div 
-      className="bg-white dark:bg-black border-l-2 border-blue-500 flex flex-col transition-all duration-200 fixed right-0 top-0 h-screen"
+      ref={dropZoneRef}
+      className={`bg-white dark:bg-black border-l-2 border-blue-500 flex flex-col transition-all duration-200 fixed right-0 top-0 h-screen ${
+        isDragOver ? 'border-blue-400 bg-blue-50 dark:bg-blue-950' : ''
+      }`}
       style={{ width: `${width}px` }}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
+      {/* Drag overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900 bg-opacity-80 flex items-center justify-center z-50 border-2 border-dashed border-blue-400">
+          <div className="text-center">
+            <ImageIcon className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
+            <p className="text-lg font-bold text-blue-600 dark:text-blue-400 font-mono">
+              DROP IMAGE HERE
+            </p>
+            <p className="text-sm text-blue-500 dark:text-blue-300 font-mono">
+              Analyze mathematical problems & diagrams
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-4 border-b-2 border-blue-500 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-2">
@@ -277,6 +374,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
               Models: {availableModels.length}
               <br />
               Width: {width}px
+              <br />
+              Vision: {selectedModel.includes('llava') || selectedModel.includes('vision') ? 'Enabled' : 'Check model'}
             </div>
           </div>
         </div>
@@ -291,6 +390,23 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                 ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 ml-auto' 
                 : 'border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800'
             }`}>
+              {/* Image display for user messages */}
+              {message.image && (
+                <div className="mb-3">
+                  <img 
+                    src={message.image} 
+                    alt={message.imageName || "Uploaded image"}
+                    className="max-w-full h-auto border border-blue-300 dark:border-blue-700 rounded"
+                    style={{ maxHeight: '200px' }}
+                  />
+                  {message.imageName && (
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-mono">
+                      📎 {message.imageName}
+                    </p>
+                  )}
+                </div>
+              )}
+              
               <div className="text-sm font-mono text-black dark:text-white leading-relaxed">
                 {message.isUser ? (
                   // User messages - plain text
@@ -311,28 +427,74 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
 
       {/* Input Area */}
       <div className="p-4 border-t-2 border-blue-500 flex-shrink-0">
-        <div className="flex space-x-2">
+        {/* Image preview */}
+        {selectedImage && (
+          <div className="mb-3 p-2 border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono text-blue-700 dark:text-blue-300">
+                📎 {selectedImageName}
+              </span>
+              <button
+                onClick={removeSelectedImage}
+                className="p-1 hover:bg-blue-200 dark:hover:bg-blue-800 rounded transition-colors duration-200"
+              >
+                <X className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+              </button>
+            </div>
+            <img 
+              src={selectedImage} 
+              alt="Selected"
+              className="max-w-full h-auto border border-blue-300 dark:border-blue-700 rounded"
+              style={{ maxHeight: '100px' }}
+            />
+          </div>
+        )}
+
+        <div className="flex space-x-2 mb-2">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-            placeholder={isConnected ? "Ask about calculus..." : "Connect to Ollama first..."}
+            placeholder={isConnected ? "Ask about calculus or upload an image..." : "Connect to Ollama first..."}
             disabled={!isConnected || isLoading}
             className="flex-1 p-2 border-2 border-blue-500 bg-white dark:bg-black text-black dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
           />
           <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!isConnected || isLoading}
+            className="p-2 border-2 border-blue-500 bg-white dark:bg-black hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-600 dark:text-blue-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Upload image"
+          >
+            <Upload className="w-4 h-4" />
+          </button>
+          <button
             onClick={handleSendMessage}
-            disabled={!isConnected || isLoading || !inputText.trim()}
+            disabled={!isConnected || isLoading || (!inputText.trim() && !selectedImage)}
             className="p-2 border-2 border-blue-500 bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
         
         {!isConnected && (
-          <p className="text-xs font-mono text-red-600 dark:text-red-400 mt-2">
+          <p className="text-xs font-mono text-red-600 dark:text-red-400">
             Start Ollama to enable AI chat
+          </p>
+        )}
+
+        {isConnected && !selectedModel.includes('llava') && !selectedModel.includes('vision') && (
+          <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
+            For image analysis, use a vision model like llava
           </p>
         )}
       </div>
