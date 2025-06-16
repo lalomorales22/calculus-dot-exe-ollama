@@ -85,6 +85,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   const [isModelConnected, setIsModelConnected] = useState(false);
   const [isConnectingModel, setIsConnectingModel] = useState(false);
   const [modelConnectionError, setModelConnectionError] = useState<string>('');
+  const [visionCapabilities, setVisionCapabilities] = useState<{[key: string]: boolean}>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -97,10 +98,72 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Check if model is vision-capable
+  // Enhanced vision model detection
   const isVisionModel = (modelName: string): boolean => {
-    const visionKeywords = ['llava', 'vision', 'multimodal', 'bakllava', 'moondream'];
-    return visionKeywords.some(keyword => modelName.toLowerCase().includes(keyword));
+    // Check if we've already tested this model
+    if (visionCapabilities[modelName] !== undefined) {
+      return visionCapabilities[modelName];
+    }
+
+    // Known vision model patterns
+    const visionKeywords = [
+      'llava',
+      'vision',
+      'multimodal', 
+      'bakllava',
+      'moondream',
+      'gemma2:27b-instruct-v1.1-q4_0', // Specific Gemma vision model
+      'gemma2:9b-instruct-v1.1-q4_0',  // Another Gemma vision variant
+      'minicpm-v',
+      'cogvlm',
+      'qwen-vl',
+      'internvl',
+      'yi-vl'
+    ];
+
+    // Check for exact matches first
+    const exactMatch = visionKeywords.some(keyword => 
+      modelName.toLowerCase() === keyword.toLowerCase()
+    );
+
+    if (exactMatch) return true;
+
+    // Check for partial matches
+    const partialMatch = visionKeywords.some(keyword => 
+      modelName.toLowerCase().includes(keyword.toLowerCase())
+    );
+
+    // Special handling for Gemma models - many Gemma models support vision
+    const isGemmaVision = modelName.toLowerCase().includes('gemma') && (
+      modelName.includes('27b') || 
+      modelName.includes('9b') ||
+      modelName.includes('instruct') ||
+      modelName.includes('v1.1')
+    );
+
+    return partialMatch || isGemmaVision;
+  };
+
+  // Test if a model actually supports vision by attempting to send an image
+  const testVisionCapability = async (modelName: string): Promise<boolean> => {
+    try {
+      // Create a small test image (1x1 pixel transparent PNG)
+      const testImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      
+      const testMessages: ChatMessage[] = [
+        { 
+          role: 'user', 
+          content: 'Can you see this image? Just respond with "yes" or "no".',
+          images: [testImage]
+        }
+      ];
+
+      await OllamaService.sendChatMessage(modelName, testMessages);
+      return true;
+    } catch (error) {
+      // If the model doesn't support vision, it will likely throw an error
+      return false;
+    }
   };
 
   const scrollToBottom = () => {
@@ -137,7 +200,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
     setModelConnectionError('');
 
     try {
-      // Test the model by sending a simple message
+      // Test basic connectivity first
       const testMessages: ChatMessage[] = [
         { role: 'user', content: 'Hello, are you working?' }
       ];
@@ -145,6 +208,23 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
       await OllamaService.sendChatMessage(selectedModel, testMessages);
       setIsModelConnected(true);
       setModelConnectionError('');
+
+      // Test vision capability if we think it's a vision model
+      if (isVisionModel(selectedModel)) {
+        console.log(`Testing vision capability for ${selectedModel}...`);
+        const hasVision = await testVisionCapability(selectedModel);
+        setVisionCapabilities(prev => ({
+          ...prev,
+          [selectedModel]: hasVision
+        }));
+        
+        if (!hasVision) {
+          console.log(`${selectedModel} does not actually support vision despite the name`);
+        } else {
+          console.log(`${selectedModel} confirmed to support vision`);
+        }
+      }
+
     } catch (error) {
       setIsModelConnected(false);
       setModelConnectionError(error instanceof Error ? error.message : 'Failed to connect to model');
@@ -293,6 +373,19 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
     }
   };
 
+  // Get the actual vision status for the selected model
+  const getVisionStatus = () => {
+    if (!selectedModel) return false;
+    
+    // If we've tested this model, use the actual result
+    if (visionCapabilities[selectedModel] !== undefined) {
+      return visionCapabilities[selectedModel];
+    }
+    
+    // Otherwise, use the heuristic
+    return isVisionModel(selectedModel);
+  };
+
   if (isMinimized) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
@@ -348,7 +441,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
             ) : (
               <WifiOff className="w-4 h-4 text-gray-400" />
             )}
-            {selectedModel && isVisionModel(selectedModel) ? (
+            {getVisionStatus() ? (
               <Eye className="w-4 h-4 text-purple-500" />
             ) : (
               <EyeOff className="w-4 h-4 text-gray-400" />
@@ -394,7 +487,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                 ) : (
                   availableModels.map((model) => (
                     <option key={model.name} value={model.name}>
-                      {model.name}
+                      {model.name} {isVisionModel(model.name) ? '👁️' : ''}
                     </option>
                   ))
                 )}
@@ -413,7 +506,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                 disabled={!selectedModel || !isConnected || isConnectingModel}
                 className="flex-1 p-2 border-2 border-green-500 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:border-gray-500 text-white font-mono text-xs transition-colors duration-200"
               >
-                {isConnectingModel ? 'CONNECTING...' : 'CONNECT'}
+                {isConnectingModel ? 'TESTING...' : 'CONNECT'}
               </button>
             </div>
 
@@ -449,8 +542,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Vision:</span>
-                  <span className={selectedModel && isVisionModel(selectedModel) ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'}>
-                    {selectedModel && isVisionModel(selectedModel) ? 'Enabled' : 'Disabled'}
+                  <span className={getVisionStatus() ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'}>
+                    {selectedModel && visionCapabilities[selectedModel] !== undefined 
+                      ? (visionCapabilities[selectedModel] ? 'Tested ✓' : 'Tested ✗')
+                      : (getVisionStatus() ? 'Detected' : 'Disabled')
+                    }
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -584,9 +680,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
           </p>
         )}
 
-        {isConnected && isModelConnected && selectedImage && !isVisionModel(selectedModel) && (
+        {isConnected && isModelConnected && selectedImage && !getVisionStatus() && (
           <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
-            For image analysis, use a vision model like llava
+            For image analysis, use a vision model like llava or gemma2:27b
           </p>
         )}
       </div>
