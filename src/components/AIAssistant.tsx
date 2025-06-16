@@ -538,14 +538,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                     }
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Models:</span>
-                  <span>{availableModels.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Width:</span>
-                  <span>{width}px</span>
-                </div>
               </div>
             </div>
           </div>
