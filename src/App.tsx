@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { ThemeProvider } from './contexts/ThemeContext';
 import Header from './components/Header';
 import ModuleCard from './components/ModuleCard';
 import AIAssistant from './components/AIAssistant';
@@ -52,66 +51,63 @@ function App() {
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
-        <Header />
-        
-        <div ref={containerRef} className="flex relative">
-          <main 
-            className="flex-1 p-6 transition-all duration-200"
-            style={{ marginRight: `${sidebarWidth}px` }}
-          >
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-black dark:text-white font-mono mb-2">
-                CALCULUS REFERENCE SYSTEM
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 font-mono">
-                Complete formulas, theorems, and concepts for all 8 chunks
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              {modulesData.map((module, index) => (
-                <ModuleCard
-                  key={index}
-                  title={module.title}
-                  topics={module.topics}
-                />
-              ))}
-            </div>
-            
-            <div className="mt-8 p-4 border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
-              <h2 className="text-lg font-bold text-black dark:text-white font-mono mb-2">
-                SYSTEM INFO
-              </h2>
-              <p className="text-sm text-gray-700 dark:text-gray-300 font-mono">
-                • Click chunk headers to expand content<br/>
-                • Use AI assistant for personalized help<br/>
-                • Toggle light/dark mode in header<br/>
-                • All formulas rendered with LaTeX<br/>
-                • Drag the sidebar divider to resize<br/>
-                • Upload images to AI for problem analysis
-              </p>
-            </div>
-          </main>
-          
-          {/* Resize Handle */}
-          <div
-            className={`absolute top-0 bottom-0 w-1 bg-blue-500 hover:bg-blue-400 cursor-col-resize z-10 transition-colors duration-200 ${
-              isResizing ? 'bg-blue-400' : ''
-            }`}
-            style={{ right: `${sidebarWidth}px` }}
-            onMouseDown={handleMouseDown}
-          >
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-8 bg-blue-500 border border-blue-400 flex items-center justify-center">
-              <div className="w-0.5 h-4 bg-white dark:bg-black"></div>
-            </div>
+    <div className="min-h-screen bg-black">
+      <Header />
+      
+      <div ref={containerRef} className="flex relative">
+        <main 
+          className="flex-1 p-6 transition-all duration-200"
+          style={{ marginRight: `${sidebarWidth}px` }}
+        >
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white font-mono mb-2">
+              CALCULUS REFERENCE SYSTEM
+            </h1>
+            <p className="text-gray-400 font-mono">
+              Complete formulas, theorems, and concepts for all 8 chunks
+            </p>
           </div>
           
-          <AIAssistant width={sidebarWidth} />
+          <div className="space-y-4">
+            {modulesData.map((module, index) => (
+              <ModuleCard
+                key={index}
+                title={module.title}
+                topics={module.topics}
+              />
+            ))}
+          </div>
+          
+          <div className="mt-8 p-4 border-2 border-blue-500 bg-blue-950">
+            <h2 className="text-lg font-bold text-white font-mono mb-2">
+              SYSTEM INFO
+            </h2>
+            <p className="text-sm text-gray-300 font-mono">
+              • Click chunk headers to expand content<br/>
+              • Use AI assistant for personalized help<br/>
+              • All formulas rendered with LaTeX<br/>
+              • Drag the sidebar divider to resize<br/>
+              • Upload images to AI for problem analysis
+            </p>
+          </div>
+        </main>
+        
+        {/* Resize Handle */}
+        <div
+          className={`absolute top-0 bottom-0 w-1 bg-blue-500 hover:bg-blue-400 cursor-col-resize z-10 transition-colors duration-200 ${
+            isResizing ? 'bg-blue-400' : ''
+          }`}
+          style={{ right: `${sidebarWidth}px` }}
+          onMouseDown={handleMouseDown}
+        >
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-8 bg-blue-500 border border-blue-400 flex items-center justify-center">
+            <div className="w-0.5 h-4 bg-black"></div>
+          </div>
         </div>
+        
+        <AIAssistant width={sidebarWidth} />
       </div>
-    </ThemeProvider>
+    </div>
   );
 }
 

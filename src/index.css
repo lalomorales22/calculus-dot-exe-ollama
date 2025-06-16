@@ -8,44 +8,24 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* KaTeX styling for both light and dark modes */
+/* KaTeX styling for dark theme */
 .katex {
-  color: black !important;
-}
-
-.dark .katex {
   color: white !important;
 }
 
 .katex .mord {
-  color: black !important;
-}
-
-.dark .katex .mord {
   color: white !important;
 }
 
 .katex .mbin {
-  color: #3b82f6 !important;
-}
-
-.dark .katex .mbin {
   color: #60a5fa !important;
 }
 
 .katex .mrel {
-  color: #3b82f6 !important;
-}
-
-.dark .katex .mrel {
   color: #60a5fa !important;
 }
 
 .katex .mop {
-  color: #059669 !important;
-}
-
-.dark .katex .mop {
   color: #34d399 !important;
 }
 
@@ -55,12 +35,8 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border: 2px solid #3b82f6;
-}
-
-.dark ::-webkit-scrollbar-track {
   background: #1f1f1f;
+  border: 2px solid #3b82f6;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -78,32 +54,18 @@
 }
 
 .ai-chat-scroll::-webkit-scrollbar-track {
-  background: #f8fafc;
-  border: 1px solid #3b82f6;
-  border-radius: 0;
-}
-
-.dark .ai-chat-scroll::-webkit-scrollbar-track {
   background: #0f172a;
   border: 1px solid #3b82f6;
+  border-radius: 0;
 }
 
 .ai-chat-scroll::-webkit-scrollbar-thumb {
-  background: #3b82f6;
-  border-radius: 0;
-  border: 1px solid #1d4ed8;
-}
-
-.ai-chat-scroll::-webkit-scrollbar-thumb:hover {
-  background: #1d4ed8;
-}
-
-.dark .ai-chat-scroll::-webkit-scrollbar-thumb {
   background: #60a5fa;
+  border-radius: 0;
   border: 1px solid #3b82f6;
 }
 
-.dark .ai-chat-scroll::-webkit-scrollbar-thumb:hover {
+.ai-chat-scroll::-webkit-scrollbar-thumb:hover {
   background: #3b82f6;
 }
 
@@ -148,11 +110,6 @@ input:focus, button:focus {
   white-space: nowrap;
 }
 
-/* Dark mode transitions */
-.dark-transition {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
 /* Smooth scrolling for chat messages */
 .ai-chat-scroll {
   scroll-behavior: smooth;
@@ -161,9 +118,5 @@ input:focus, button:focus {
 /* Custom scrollbar for Firefox */
 .ai-chat-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #3b82f6 #f8fafc;
-}
-
-.dark .ai-chat-scroll {
   scrollbar-color: #60a5fa #0f172a;
 }

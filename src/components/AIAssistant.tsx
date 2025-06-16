@@ -27,7 +27,7 @@ const formatMathContent = (text: string) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
       const math = part.slice(2, -2).trim();
       return (
-        <div key={index} className="my-3 p-3 border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+        <div key={index} className="my-3 p-3 border-2 border-blue-700 bg-blue-950 rounded">
           <BlockMath math={math} />
         </div>
       );
@@ -37,7 +37,7 @@ const formatMathContent = (text: string) => {
     if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
       const math = part.slice(1, -1).trim();
       return (
-        <span key={index} className="inline-block px-2 py-1 mx-1 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+        <span key={index} className="inline-block px-2 py-1 mx-1 border border-blue-700 bg-blue-950 rounded">
           <InlineMath math={math} />
         </span>
       );
@@ -46,7 +46,7 @@ const formatMathContent = (text: string) => {
     // LaTeX environments (like \begin{align}...\end{align})
     if (part.includes('\\begin{') && part.includes('\\end{')) {
       return (
-        <div key={index} className="my-3 p-3 border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+        <div key={index} className="my-3 p-3 border-2 border-blue-700 bg-blue-950 rounded">
           <BlockMath math={part} />
         </div>
       );
@@ -391,8 +391,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
   return (
     <div 
       ref={dropZoneRef}
-      className={`bg-white dark:bg-black border-l-2 border-blue-500 flex flex-col transition-all duration-200 fixed right-0 top-0 h-screen ${
-        isDragOver ? 'border-blue-400 bg-blue-50 dark:bg-blue-950' : ''
+      className={`bg-black border-l-2 border-blue-500 flex flex-col transition-all duration-200 fixed right-0 top-0 h-screen ${
+        isDragOver ? 'border-blue-400 bg-blue-950' : ''
       }`}
       style={{ width: `${width}px` }}
       onDragOver={handleDragOver}
@@ -401,13 +401,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
     >
       {/* Drag overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900 bg-opacity-80 flex items-center justify-center z-50 border-2 border-dashed border-blue-400">
+        <div className="absolute inset-0 bg-blue-900 bg-opacity-80 flex items-center justify-center z-50 border-2 border-dashed border-blue-400">
           <div className="text-center">
-            <ImageIcon className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-            <p className="text-lg font-bold text-blue-600 dark:text-blue-400 font-mono">
+            <ImageIcon className="w-12 h-12 text-blue-400 mx-auto mb-2" />
+            <p className="text-lg font-bold text-blue-400 font-mono">
               DROP IMAGE HERE
             </p>
-            <p className="text-sm text-blue-500 dark:text-blue-300 font-mono">
+            <p className="text-sm text-blue-300 font-mono">
               Analyze mathematical problems & diagrams
             </p>
           </div>
@@ -417,8 +417,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
       {/* Header */}
       <div className="p-4 border-b-2 border-blue-500 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-2">
-          <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h3 className="font-bold text-black dark:text-white font-mono">CALC TUTOR AI</h3>
+          <Bot className="w-5 h-5 text-blue-400" />
+          <h3 className="font-bold text-white font-mono">CALC TUTOR AI</h3>
           <div className="flex items-center space-x-1">
             {isConnected ? (
               <CheckCircle className="w-4 h-4 text-green-500" />
@@ -440,25 +440,25 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
         <div className="flex space-x-1">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-200"
+            className="p-1 hover:bg-blue-900 transition-colors duration-200"
           >
-            <Settings className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <Settings className="w-4 h-4 text-blue-400" />
           </button>
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-200"
+            className="p-1 hover:bg-blue-900 transition-colors duration-200"
           >
-            <Minimize2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <Minimize2 className="w-4 h-4 text-blue-400" />
           </button>
         </div>
       </div>
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="p-4 border-b-2 border-blue-500 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+        <div className="p-4 border-b-2 border-blue-500 bg-gray-900 flex-shrink-0">
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold text-black dark:text-white font-mono mb-1">
+              <label className="block text-xs font-bold text-white font-mono mb-1">
                 OLLAMA MODEL:
               </label>
               <select
@@ -468,7 +468,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                   setIsModelConnected(false); // Reset connection status when model changes
                   setModelConnectionError('');
                 }}
-                className="w-full p-2 border-2 border-blue-500 bg-white dark:bg-black text-black dark:text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-2 border-2 border-blue-500 bg-black text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
                 disabled={!isConnected}
               >
                 {availableModels.length === 0 ? (
@@ -500,38 +500,38 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
             </div>
 
             {connectionError && (
-              <div className="p-2 border-2 border-red-500 bg-red-50 dark:bg-red-950">
-                <p className="text-xs font-mono text-red-700 dark:text-red-300">
+              <div className="p-2 border-2 border-red-500 bg-red-950">
+                <p className="text-xs font-mono text-red-300">
                   {connectionError}
                 </p>
               </div>
             )}
 
             {modelConnectionError && (
-              <div className="p-2 border-2 border-red-500 bg-red-50 dark:bg-red-950">
-                <p className="text-xs font-mono text-red-700 dark:text-red-300">
+              <div className="p-2 border-2 border-red-500 bg-red-950">
+                <p className="text-xs font-mono text-red-300">
                   Model Error: {modelConnectionError}
                 </p>
               </div>
             )}
 
-            <div className="p-2 border-2 border-blue-500 bg-blue-50 dark:bg-blue-950">
-              <div className="text-xs font-mono text-gray-600 dark:text-gray-400 space-y-1">
+            <div className="p-2 border-2 border-blue-500 bg-blue-950">
+              <div className="text-xs font-mono text-gray-400 space-y-1">
                 <div className="flex items-center justify-between">
                   <span>Ollama:</span>
-                  <span className={isConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  <span className={isConnected ? 'text-green-400' : 'text-red-400'}>
                     {isConnected ? 'Connected' : 'Disconnected'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Model:</span>
-                  <span className={isModelConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  <span className={isModelConnected ? 'text-green-400' : 'text-red-400'}>
                     {isModelConnected ? 'Ready' : 'Not Connected'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Vision:</span>
-                  <span className={getVisionStatus() ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'}>
+                  <span className={getVisionStatus() ? 'text-purple-400' : 'text-gray-400'}>
                     {selectedModel && visionCapabilities[selectedModel] !== undefined 
                       ? (visionCapabilities[selectedModel] ? 'Tested ✓' : 'Tested ✗')
                       : (getVisionStatus() ? 'Detected' : 'Disabled')
@@ -558,8 +558,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
           <div key={message.id} className={`${message.isUser ? 'ml-4' : 'mr-4'}`}>
             <div className={`p-3 border-2 ${
               message.isUser 
-                ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 ml-auto' 
-                : 'border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800'
+                ? 'border-blue-500 bg-blue-900 ml-auto' 
+                : 'border-gray-700 bg-gray-800'
             }`}>
               {/* Image display for user messages */}
               {message.image && (
@@ -567,18 +567,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
                   <img 
                     src={message.image} 
                     alt={message.imageName || "Uploaded image"}
-                    className="max-w-full h-auto border border-blue-300 dark:border-blue-700 rounded"
+                    className="max-w-full h-auto border border-blue-700 rounded"
                     style={{ maxHeight: '200px' }}
                   />
                   {message.imageName && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-mono">
+                    <p className="text-xs text-gray-400 mt-1 font-mono">
                       📎 {message.imageName}
                     </p>
                   )}
                 </div>
               )}
               
-              <div className="text-sm font-mono text-black dark:text-white leading-relaxed">
+              <div className="text-sm font-mono text-white leading-relaxed">
                 {message.isUser ? (
                   // User messages - plain text
                   <span className="whitespace-pre-wrap">{message.text}</span>
@@ -600,22 +600,22 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
       <div className="p-4 border-t-2 border-blue-500 flex-shrink-0">
         {/* Image preview */}
         {selectedImage && (
-          <div className="mb-3 p-2 border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 rounded">
+          <div className="mb-3 p-2 border-2 border-blue-700 bg-blue-950 rounded">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-blue-700 dark:text-blue-300">
+              <span className="text-xs font-mono text-blue-300">
                 📎 {selectedImageName}
               </span>
               <button
                 onClick={removeSelectedImage}
-                className="p-1 hover:bg-blue-200 dark:hover:bg-blue-800 rounded transition-colors duration-200"
+                className="p-1 hover:bg-blue-800 rounded transition-colors duration-200"
               >
-                <X className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                <X className="w-3 h-3 text-blue-400" />
               </button>
             </div>
             <img 
               src={selectedImage} 
               alt="Selected"
-              className="max-w-full h-auto border border-blue-300 dark:border-blue-700 rounded"
+              className="max-w-full h-auto border border-blue-700 rounded"
               style={{ maxHeight: '100px' }}
             />
           </div>
@@ -629,12 +629,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
             placeholder={isModelConnected ? "Ask about calculus or upload an image..." : "Connect to model first..."}
             disabled={!isConnected || !isModelConnected || isLoading}
-            className="flex-1 p-2 border-2 border-blue-500 bg-white dark:bg-black text-black dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+            className="flex-1 p-2 border-2 border-blue-500 bg-black text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={!isConnected || !isModelConnected || isLoading}
-            className="p-2 border-2 border-blue-500 bg-white dark:bg-black hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-600 dark:text-blue-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 border-2 border-blue-500 bg-black hover:bg-blue-950 text-blue-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Upload image"
           >
             <Upload className="w-4 h-4" />
@@ -658,19 +658,19 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ width }) => {
         />
         
         {!isConnected && (
-          <p className="text-xs font-mono text-red-600 dark:text-red-400">
+          <p className="text-xs font-mono text-red-400">
             Start Ollama to enable AI chat
           </p>
         )}
 
         {isConnected && !isModelConnected && (
-          <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
+          <p className="text-xs font-mono text-yellow-400">
             Click CONNECT to test the selected model
           </p>
         )}
 
         {isConnected && isModelConnected && selectedImage && !getVisionStatus() && (
-          <p className="text-xs font-mono text-yellow-600 dark:text-yellow-400">
+          <p className="text-xs font-mono text-yellow-400">
             For image analysis, use a vision model like llava or gemma
           </p>
         )}
