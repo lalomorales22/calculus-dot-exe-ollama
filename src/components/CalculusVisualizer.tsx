@@ -61,8 +61,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   const [angleValue, setAngleValue] = useState(Math.PI / 4); // For unit circle
   const [selectedFunction, setSelectedFunction] = useState<keyof typeof functions>('cubic');
   
-  // Zoom settings - showing 10 units in each direction
-  const scale = Math.min(width, height) / 20; // Scale factor for coordinates
+  // FIXED ZOOM: Show 5 units in each direction (-5 to +5) for better visibility
+  const scale = Math.min(width, height) / 10; // Much larger scale for zoom IN
   const gridSpacing = scale / 2; // Grid spacing in pixels
   
   // Canvas setup
@@ -97,7 +97,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.lineWidth = 1;
     ctx.globalAlpha = 0.3;
     
-    // Vertical lines
+    // Vertical lines - every 0.5 units
     for (let x = -width/2; x <= width/2; x += gridSpacing) {
       ctx.beginPath();
       ctx.moveTo(x, -height/2);
@@ -105,7 +105,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       ctx.stroke();
     }
     
-    // Horizontal lines
+    // Horizontal lines - every 0.5 units
     for (let y = -height/2; y <= height/2; y += gridSpacing) {
       ctx.beginPath();
       ctx.moveTo(-width/2, y);
@@ -134,13 +134,13 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     
     // Axis labels and tick marks
     ctx.fillStyle = '#60a5fa';
-    ctx.font = '10px JetBrains Mono';
+    ctx.font = '12px JetBrains Mono';
     ctx.scale(1, -1); // Flip text back
     
-    // X-axis tick marks and labels
-    for (let i = -10; i <= 10; i++) {
+    // X-axis tick marks and labels - every 1 unit
+    for (let i = -5; i <= 5; i++) {
       if (i !== 0) {
-        const x = i * scale / 10;
+        const x = i * scale / 5;
         ctx.fillText(i.toString(), x - 5, 15);
         ctx.scale(1, -1);
         ctx.beginPath();
@@ -151,10 +151,10 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       }
     }
     
-    // Y-axis tick marks and labels
-    for (let i = -10; i <= 10; i++) {
+    // Y-axis tick marks and labels - every 1 unit
+    for (let i = -5; i <= 5; i++) {
       if (i !== 0) {
-        const y = i * scale / 10;
+        const y = i * scale / 5;
         ctx.fillText(i.toString(), 10, -y + 3);
         ctx.scale(1, -1);
         ctx.beginPath();
@@ -176,12 +176,12 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.beginPath();
     
     let started = false;
-    for (let px = -width/2; px <= width/2; px += 2) {
-      const x = px / scale * 10; // Convert to mathematical coordinates
+    for (let px = -width/2; px <= width/2; px += 1) {
+      const x = px / scale * 5; // Convert to mathematical coordinates (-5 to +5)
       const y = func(x);
       
-      if (!isNaN(y) && Math.abs(y) < 10) {
-        const py = y * scale / 10; // Convert to canvas coordinates
+      if (!isNaN(y) && Math.abs(y) < 5) {
+        const py = y * scale / 5; // Convert to canvas coordinates
         if (Math.abs(py) < height/2) {
           if (!started) {
             ctx.moveTo(px, py);
@@ -202,7 +202,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   const drawPoint = (ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size: number = 4) => {
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x * scale / 10, y * scale / 10, size, 0, 2 * Math.PI);
+    ctx.arc(x * scale / 5, y * scale / 5, size, 0, 2 * Math.PI);
     ctx.fill();
   };
 
@@ -210,8 +210,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
-    ctx.moveTo(x1 * scale / 10, y1 * scale / 10);
-    ctx.lineTo(x2 * scale / 10, y2 * scale / 10);
+    ctx.moveTo(x1 * scale / 5, y1 * scale / 5);
+    ctx.lineTo(x2 * scale / 5, y2 * scale / 5);
     ctx.stroke();
   };
 
@@ -233,8 +233,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       // Draw tangent line
       const slope = currentFunc.fPrime(xValue);
       if (!isNaN(slope)) {
-        const x1 = xValue - 3;
-        const x2 = xValue + 3;
+        const x1 = xValue - 2;
+        const x2 = xValue + 2;
         const y1 = y + slope * (x1 - xValue);
         const y2 = y + slope * (x2 - xValue);
         drawLine(ctx, x1, y1, x2, y2, '#ef4444', 2);
@@ -268,8 +268,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       // Draw secant line
       if (Math.abs(hValue) > 0.001) {
         const slope = (approachY - targetY) / hValue;
-        const x1 = Math.min(xValue, approachX) - 2;
-        const x2 = Math.max(xValue, approachX) + 2;
+        const x1 = Math.min(xValue, approachX) - 1.5;
+        const x2 = Math.max(xValue, approachX) + 1.5;
         const y1 = targetY + slope * (x1 - xValue);
         const y2 = targetY + slope * (x2 - xValue);
         drawLine(ctx, x1, y1, x2, y2, '#8b5cf6', 2);
@@ -304,8 +304,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
         
         if (!isNaN(secantY) && Math.abs(h) > 0.001) {
           const slope = (secantY - baseY) / h;
-          const x1 = baseX - 3;
-          const x2 = baseX + 3;
+          const x1 = baseX - 2;
+          const x2 = baseX + 2;
           const y1 = baseY + slope * (x1 - baseX);
           const y2 = baseY + slope * (x2 - baseX);
           
@@ -320,8 +320,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       // Draw final tangent line
       const slope = currentFunc.fPrime(baseX);
       if (!isNaN(slope)) {
-        const x1 = baseX - 3;
-        const x2 = baseX + 3;
+        const x1 = baseX - 2;
+        const x2 = baseX + 2;
         const y1 = baseY + slope * (x1 - baseX);
         const y2 = baseY + slope * (x2 - baseX);
         drawLine(ctx, x1, y1, x2, y2, '#ef4444', 3);
@@ -332,7 +332,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   };
 
   const drawCircleVisualization = (ctx: CanvasRenderingContext2D) => {
-    const radius = Math.min(width, height) * 0.3;
+    const radius = Math.min(width, height) * 0.35; // Bigger circle
     const angle = angleValue;
     
     // Draw unit circle
@@ -348,20 +348,28 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     
     // Draw angle arc
     ctx.strokeStyle = '#60a5fa';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.3, 0, angle);
+    ctx.arc(0, 0, radius * 0.4, 0, angle);
     ctx.stroke();
     
     // Draw radius line
-    drawLine(ctx, 0, 0, x / scale * 10, y / scale * 10, '#ef4444', 3);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(x, y);
+    ctx.stroke();
     
     // Draw point on circle
-    drawPoint(ctx, x / scale * 10, y / scale * 10, '#ef4444', 8);
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.fill();
     
     // Draw triangle (projections)
     ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(x, 0);
@@ -372,7 +380,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     // Draw projection lines
     ctx.strokeStyle = '#8b5cf6';
     ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
+    ctx.setLineDash([8, 8]);
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x, 0);
@@ -399,9 +407,10 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     
     // Label the sides of the triangle
     ctx.fillStyle = '#f59e0b';
-    ctx.fillText('cos(θ)', x/2 - 20, 20);
-    ctx.fillText('sin(θ)', x + 10, y/2);
-    ctx.fillText('1', x/2 - 10, y/2 + 15);
+    ctx.font = '16px JetBrains Mono';
+    ctx.fillText('cos(θ)', x/2 - 30, 25);
+    ctx.fillText('sin(θ)', x + 15, y/2);
+    ctx.fillText('r=1', x/2 - 15, y/2 + 20);
     
     ctx.scale(1, -1);
   };
@@ -422,19 +431,19 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     drawPoint(ctx, currentX, cosineY, '#10b981', 6);
     
     // Draw vertical line
-    drawLine(ctx, currentX, -10, currentX, 10, '#60a5fa', 1);
+    drawLine(ctx, currentX, -5, currentX, 5, '#60a5fa', 1);
     
     // Draw horizontal reference lines
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
+    ctx.setLineDash([5, 5]);
     ctx.beginPath();
-    ctx.moveTo(-width/2, sineY * scale / 10);
-    ctx.lineTo(currentX * scale / 10, sineY * scale / 10);
+    ctx.moveTo(-width/2, sineY * scale / 5);
+    ctx.lineTo(currentX * scale / 5, sineY * scale / 5);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(-width/2, cosineY * scale / 10);
-    ctx.lineTo(currentX * scale / 10, cosineY * scale / 10);
+    ctx.moveTo(-width/2, cosineY * scale / 5);
+    ctx.lineTo(currentX * scale / 5, cosineY * scale / 5);
     ctx.stroke();
     ctx.setLineDash([]);
     
@@ -653,8 +662,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               </label>
               <input
                 type="range"
-                min="-8"
-                max="8"
+                min="-4"
+                max="4"
                 step="0.1"
                 value={xValue}
                 onChange={(e) => setXValue(parseFloat(e.target.value))}
@@ -668,7 +677,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               <input
                 type="range"
                 min="0.001"
-                max="3"
+                max="2"
                 step="0.001"
                 value={hValue}
                 onChange={(e) => setHValue(parseFloat(e.target.value))}
@@ -704,7 +713,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               <input
                 type="range"
                 min="0.1"
-                max="5"
+                max="3"
                 step="0.1"
                 value={amplitude}
                 onChange={(e) => setAmplitude(parseFloat(e.target.value))}
@@ -718,7 +727,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               <input
                 type="range"
                 min="0.1"
-                max="5"
+                max="3"
                 step="0.1"
                 value={frequency}
                 onChange={(e) => setFrequency(parseFloat(e.target.value))}
