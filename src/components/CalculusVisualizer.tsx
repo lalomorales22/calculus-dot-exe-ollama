@@ -51,11 +51,15 @@ const functions = {
 };
 
 const CalculusVisualizer: React.FC<VisualizerProps> = ({ 
-  width = 800, 
-  height = 500 
+  width: propWidth, 
+  height: propHeight 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
+  
+  // Dynamic sizing based on container
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 500 });
   
   // State for different visualization modes
   const [mode, setMode] = useState<'derivative' | 'limit' | 'tangent' | 'circle' | 'wave'>('derivative');
@@ -77,6 +81,25 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   const [panY, setPanY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+
+  // Update canvas size based on container
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      if (containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const padding = 8; // Account for border and padding
+        const newWidth = Math.max(400, containerRect.width - padding);
+        const newHeight = propHeight || 500;
+        
+        setCanvasSize({ width: newWidth, height: newHeight });
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    
+    return () => window.removeEventListener('resize', updateCanvasSize);
+  }, [propHeight]);
   
   // Calculate dynamic range based on zoom
   const getViewRange = () => {
@@ -99,11 +122,11 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     if (!ctx) return null;
     
     // Set canvas size
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = canvasSize.width;
+    canvas.height = canvasSize.height;
     
     // Set up coordinate system
-    ctx.translate(width / 2, height / 2);
+    ctx.translate(canvasSize.width / 2, canvasSize.height / 2);
     ctx.scale(1, -1); // Flip Y axis for mathematical coordinates
     
     return ctx;
@@ -119,22 +142,22 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   // Convert between coordinate systems
   const mathToCanvas = (mathX: number, mathY: number) => {
     const range = getViewRange();
-    const scaleX = width / (range.xMax - range.xMin);
-    const scaleY = height / (range.yMax - range.yMin);
+    const scaleX = canvasSize.width / (range.xMax - range.xMin);
+    const scaleY = canvasSize.height / (range.yMax - range.yMin);
     
-    const canvasX = (mathX - range.xMin) * scaleX - width / 2;
-    const canvasY = (mathY - range.yMin) * scaleY - height / 2;
+    const canvasX = (mathX - range.xMin) * scaleX - canvasSize.width / 2;
+    const canvasY = (mathY - range.yMin) * scaleY - canvasSize.height / 2;
     
     return { x: canvasX, y: canvasY };
   };
 
   const canvasToMath = (canvasX: number, canvasY: number) => {
     const range = getViewRange();
-    const scaleX = (range.xMax - range.xMin) / width;
-    const scaleY = (range.yMax - range.yMin) / height;
+    const scaleX = (range.xMax - range.xMin) / canvasSize.width;
+    const scaleY = (range.yMax - range.yMin) / canvasSize.height;
     
-    const mathX = (canvasX + width / 2) * scaleX + range.xMin;
-    const mathY = (canvasY + height / 2) * scaleY + range.yMin;
+    const mathX = (canvasX + canvasSize.width / 2) * scaleX + range.xMin;
+    const mathY = (canvasY + canvasSize.height / 2) * scaleY + range.yMin;
     
     return { x: mathX, y: mathY };
   };
@@ -152,8 +175,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     for (let x = Math.ceil(range.xMin / gridSpacing) * gridSpacing; x <= range.xMax; x += gridSpacing) {
       const canvasPos = mathToCanvas(x, 0);
       ctx.beginPath();
-      ctx.moveTo(canvasPos.x, -height/2);
-      ctx.lineTo(canvasPos.x, height/2);
+      ctx.moveTo(canvasPos.x, -canvasSize.height/2);
+      ctx.lineTo(canvasPos.x, canvasSize.height/2);
       ctx.stroke();
     }
     
@@ -161,8 +184,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     for (let y = Math.ceil(range.yMin / gridSpacing) * gridSpacing; y <= range.yMax; y += gridSpacing) {
       const canvasPos = mathToCanvas(0, y);
       ctx.beginPath();
-      ctx.moveTo(-width/2, canvasPos.y);
-      ctx.lineTo(width/2, canvasPos.y);
+      ctx.moveTo(-canvasSize.width/2, canvasPos.y);
+      ctx.lineTo(canvasSize.width/2, canvasPos.y);
       ctx.stroke();
     }
     
@@ -179,8 +202,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     if (range.yMin <= 0 && range.yMax >= 0) {
       const yPos = mathToCanvas(0, 0).y;
       ctx.beginPath();
-      ctx.moveTo(-width/2, yPos);
-      ctx.lineTo(width/2, yPos);
+      ctx.moveTo(-canvasSize.width/2, yPos);
+      ctx.lineTo(canvasSize.width/2, yPos);
       ctx.stroke();
     }
     
@@ -188,8 +211,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     if (range.xMin <= 0 && range.xMax >= 0) {
       const xPos = mathToCanvas(0, 0).x;
       ctx.beginPath();
-      ctx.moveTo(xPos, -height/2);
-      ctx.lineTo(xPos, height/2);
+      ctx.moveTo(xPos, -canvasSize.height/2);
+      ctx.lineTo(xPos, canvasSize.height/2);
       ctx.stroke();
     }
     
@@ -233,7 +256,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.beginPath();
     
     let started = false;
-    const step = (range.xMax - range.xMin) / width; // Adaptive step size
+    const step = (range.xMax - range.xMin) / canvasSize.width; // Adaptive step size
     
     for (let x = range.xMin; x <= range.xMax; x += step) {
       const y = func(x);
@@ -303,8 +326,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
         ctx.fillStyle = '#ef4444';
         ctx.font = '12px JetBrains Mono';
         ctx.scale(1, -1);
-        ctx.fillText(`f'(${xValue.toFixed(1)}) = ${slope.toFixed(3)}`, -width/2 + 20, height/2 - 30);
-        ctx.fillText(`Point: (${xValue.toFixed(1)}, ${y.toFixed(3)})`, -width/2 + 20, height/2 - 50);
+        ctx.fillText(`f'(${xValue.toFixed(1)}) = ${slope.toFixed(3)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 30);
+        ctx.fillText(`Point: (${xValue.toFixed(1)}, ${y.toFixed(3)})`, -canvasSize.width/2 + 20, canvasSize.height/2 - 50);
         ctx.scale(1, -1);
       }
     }
@@ -340,9 +363,9 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
         ctx.fillStyle = '#60a5fa';
         ctx.font = '12px JetBrains Mono';
         ctx.scale(1, -1);
-        ctx.fillText(`h = ${hValue.toFixed(4)}`, -width/2 + 20, height/2 - 30);
-        ctx.fillText(`Secant slope = ${slope.toFixed(4)}`, -width/2 + 20, height/2 - 50);
-        ctx.fillText(`Limit (h→0) = ${currentFunc.fPrime(xValue).toFixed(4)}`, -width/2 + 20, height/2 - 70);
+        ctx.fillText(`h = ${hValue.toFixed(4)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 30);
+        ctx.fillText(`Secant slope = ${slope.toFixed(4)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 50);
+        ctx.fillText(`Limit (h→0) = ${currentFunc.fPrime(xValue).toFixed(4)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 70);
         ctx.scale(1, -1);
       }
     }
@@ -398,7 +421,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   };
 
   const drawCircleVisualization = (ctx: CanvasRenderingContext2D) => {
-    const radius = Math.min(width, height) * 0.35; // Bigger circle
+    const radius = Math.min(canvasSize.width, canvasSize.height) * 0.35; // Bigger circle
     const angle = angleValue;
     
     // Draw unit circle
@@ -465,11 +488,11 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     const degrees = (angle * 180 / Math.PI) % 360;
     const radians = angle % (2 * Math.PI);
     
-    ctx.fillText(`θ = ${radians.toFixed(3)} rad`, -width/2 + 20, height/2 - 30);
-    ctx.fillText(`θ = ${degrees.toFixed(1)}°`, -width/2 + 20, height/2 - 50);
-    ctx.fillText(`sin(θ) = ${Math.sin(angle).toFixed(3)}`, -width/2 + 20, height/2 - 70);
-    ctx.fillText(`cos(θ) = ${Math.cos(angle).toFixed(3)}`, -width/2 + 20, height/2 - 90);
-    ctx.fillText(`tan(θ) = ${Math.tan(angle).toFixed(3)}`, -width/2 + 20, height/2 - 110);
+    ctx.fillText(`θ = ${radians.toFixed(3)} rad`, -canvasSize.width/2 + 20, canvasSize.height/2 - 30);
+    ctx.fillText(`θ = ${degrees.toFixed(1)}°`, -canvasSize.width/2 + 20, canvasSize.height/2 - 50);
+    ctx.fillText(`sin(θ) = ${Math.sin(angle).toFixed(3)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 70);
+    ctx.fillText(`cos(θ) = ${Math.cos(angle).toFixed(3)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 90);
+    ctx.fillText(`tan(θ) = ${Math.tan(angle).toFixed(3)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 110);
     
     // Label the sides of the triangle
     ctx.fillStyle = '#f59e0b';
@@ -509,11 +532,11 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     const cosinePos = mathToCanvas(currentX, cosineY);
     
     ctx.beginPath();
-    ctx.moveTo(-width/2, sinePos.y);
+    ctx.moveTo(-canvasSize.width/2, sinePos.y);
     ctx.lineTo(sinePos.x, sinePos.y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(-width/2, cosinePos.y);
+    ctx.moveTo(-canvasSize.width/2, cosinePos.y);
     ctx.lineTo(cosinePos.x, cosinePos.y);
     ctx.stroke();
     ctx.setLineDash([]);
@@ -522,12 +545,12 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.fillStyle = '#60a5fa';
     ctx.font = '12px JetBrains Mono';
     ctx.scale(1, -1);
-    ctx.fillText(`A = ${amplitude}`, -width/2 + 20, height/2 - 30);
-    ctx.fillText(`f = ${frequency}`, -width/2 + 20, height/2 - 50);
-    ctx.fillText(`φ = ${phase.toFixed(2)}`, -width/2 + 20, height/2 - 70);
-    ctx.fillText(`x = ${currentX.toFixed(2)}`, -width/2 + 20, height/2 - 90);
-    ctx.fillText(`sin = ${sineY.toFixed(3)}`, -width/2 + 20, height/2 - 110);
-    ctx.fillText(`cos = ${cosineY.toFixed(3)}`, -width/2 + 20, height/2 - 130);
+    ctx.fillText(`A = ${amplitude}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 30);
+    ctx.fillText(`f = ${frequency}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 50);
+    ctx.fillText(`φ = ${phase.toFixed(2)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 70);
+    ctx.fillText(`x = ${currentX.toFixed(2)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 90);
+    ctx.fillText(`sin = ${sineY.toFixed(3)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 110);
+    ctx.fillText(`cos = ${cosineY.toFixed(3)}`, -canvasSize.width/2 + 20, canvasSize.height/2 - 130);
     ctx.scale(1, -1);
   };
 
@@ -557,8 +580,8 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       const deltaY = currentMousePos.y - lastMousePos.y;
       
       const range = getViewRange();
-      const scaleX = (range.xMax - range.xMin) / width;
-      const scaleY = (range.yMax - range.yMin) / height;
+      const scaleX = (range.xMax - range.xMin) / canvasSize.width;
+      const scaleY = (range.yMax - range.yMin) / canvasSize.height;
       
       setPanX(prev => prev - deltaX * scaleX);
       setPanY(prev => prev + deltaY * scaleY); // Flip Y for math coordinates
@@ -583,11 +606,11 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     if (!ctx) return;
     
     // Clear canvas
-    ctx.clearRect(-width/2, -height/2, width, height);
+    ctx.clearRect(-canvasSize.width/2, -canvasSize.height/2, canvasSize.width, canvasSize.height);
     
     // Draw background
     ctx.fillStyle = '#000000';
-    ctx.fillRect(-width/2, -height/2, width, height);
+    ctx.fillRect(-canvasSize.width/2, -canvasSize.height/2, canvasSize.width, canvasSize.height);
     
     // Draw grid and axes
     drawGrid(ctx);
@@ -643,7 +666,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   // Render when parameters change
   useEffect(() => {
     render();
-  }, [mode, xValue, hValue, amplitude, frequency, phase, animationTime, angleValue, selectedFunction, zoomLevel, panX, panY]);
+  }, [mode, xValue, hValue, amplitude, frequency, phase, animationTime, angleValue, selectedFunction, zoomLevel, panX, panY, canvasSize]);
 
   const resetAnimation = () => {
     setAnimationTime(0);
@@ -807,12 +830,16 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
         </div>
       </div>
 
-      {/* Canvas */}
-      <div className="border-2 border-blue-700 bg-black mb-4">
+      {/* Canvas Container */}
+      <div ref={containerRef} className="border-2 border-blue-700 bg-black mb-4 overflow-hidden">
         <canvas
           ref={canvasRef}
-          className="block cursor-move"
-          style={{ imageRendering: 'pixelated' }}
+          className="block cursor-move w-full"
+          style={{ 
+            imageRendering: 'pixelated',
+            maxWidth: '100%',
+            height: 'auto'
+          }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
