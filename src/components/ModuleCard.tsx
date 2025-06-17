@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { InlineMath, BlockMath } from 'react-katex';
+import CalculusVisualizer from './CalculusVisualizer';
 
 interface Topic {
   title: string;
   formulas?: string[];
   concepts?: string[];
   explanation?: string;
+  component?: string;
 }
 
 interface ModuleCardProps {
@@ -45,6 +47,13 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ title, topics }) => {
                 <p className="text-gray-300 mb-3 font-mono text-sm leading-relaxed">
                   {topic.explanation}
                 </p>
+              )}
+
+              {/* Render interactive component if specified */}
+              {topic.component === 'CalculusVisualizer' && (
+                <div className="mb-4">
+                  <CalculusVisualizer width={800} height={500} />
+                </div>
               )}
               
               {topic.formulas && (

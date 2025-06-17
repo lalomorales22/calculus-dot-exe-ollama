@@ -1,3 +1,5 @@
+import CalculusVisualizer from '../components/CalculusVisualizer';
+
 export const modulesData = [
   {
     title: "CHUNK 1: LIMITS AND CONTINUITY",
@@ -518,6 +520,25 @@ export const modulesData = [
           "Find the area between the parabola and horizontal line",
           "Evaluate and explain why the answer makes sense (odd function)"
         ]
+      }
+    ]
+  },
+  {
+    title: "CHUNK 9: VISUALIZE CALCULUS",
+    topics: [
+      {
+        title: "Interactive Calculus Visualizations",
+        explanation: "Explore calculus concepts through interactive animations and real-time parameter adjustments. See derivatives, limits, tangent lines, unit circle, and wave functions come to life!",
+        concepts: [
+          "Derivative visualization with tangent lines",
+          "Limit exploration with approaching values",
+          "Secant to tangent line transformation",
+          "Unit circle and trigonometric functions",
+          "Sine and cosine wave animations",
+          "Interactive parameter controls",
+          "Real-time mathematical feedback"
+        ],
+        component: 'CalculusVisualizer'
       }
     ]
   }
