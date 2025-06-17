@@ -279,10 +279,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/lalomorales22/calculus-dot-exe-ollama/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/lalomorales22/calculus-dot-exe-ollama/discussions)
-- **Email**: [Your Email]
-
----
-
-**Made with ❤️ for calculus students everywhere**
-
-*Transform your calculus learning with the power of AI, vision analysis, and retro computing aesthetics!*
+- **Email**: lalo@laloadrianmorales.com
