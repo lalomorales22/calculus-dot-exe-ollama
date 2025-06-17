@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Settings, Eye, TrendingUp, Circle, Waves } from 'lucide-react';
+import { Settings, Eye, TrendingUp, Circle, Waves, RotateCcw } from 'lucide-react';
 
 interface Point {
   x: number;
@@ -11,9 +11,38 @@ interface VisualizerProps {
   height?: number;
 }
 
+// Function definitions
+const functions = {
+  cubic: {
+    name: 'f(x) = 0.1x³ - 0.5x² + x + 1',
+    f: (x: number) => 0.1 * x * x * x - 0.5 * x * x + x + 1,
+    fPrime: (x: number) => 0.3 * x * x - x + 1
+  },
+  quadratic: {
+    name: 'f(x) = x² - 2x + 1',
+    f: (x: number) => x * x - 2 * x + 1,
+    fPrime: (x: number) => 2 * x - 2
+  },
+  sine: {
+    name: 'f(x) = sin(x)',
+    f: (x: number) => Math.sin(x),
+    fPrime: (x: number) => Math.cos(x)
+  },
+  exponential: {
+    name: 'f(x) = e^(0.5x)',
+    f: (x: number) => Math.exp(0.5 * x),
+    fPrime: (x: number) => 0.5 * Math.exp(0.5 * x)
+  },
+  logarithmic: {
+    name: 'f(x) = ln(x + 3)',
+    f: (x: number) => x > -3 ? Math.log(x + 3) : NaN,
+    fPrime: (x: number) => x > -3 ? 1 / (x + 3) : NaN
+  }
+};
+
 const CalculusVisualizer: React.FC<VisualizerProps> = ({ 
-  width = 600, 
-  height = 400 
+  width = 800, 
+  height = 500 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -29,6 +58,12 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   const [amplitude, setAmplitude] = useState(1);
   const [frequency, setFrequency] = useState(1);
   const [phase, setPhase] = useState(0);
+  const [angleValue, setAngleValue] = useState(Math.PI / 4); // For unit circle
+  const [selectedFunction, setSelectedFunction] = useState<keyof typeof functions>('cubic');
+  
+  // Zoom settings - showing 10 units in each direction
+  const scale = Math.min(width, height) / 20; // Scale factor for coordinates
+  const gridSpacing = scale / 2; // Grid spacing in pixels
   
   // Canvas setup
   const setupCanvas = () => {
@@ -49,9 +84,10 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     return ctx;
   };
 
+  // Get current function
+  const getCurrentFunction = () => functions[selectedFunction];
+
   // Mathematical functions
-  const f = (x: number) => 0.1 * x * x * x - 0.5 * x * x + x + 1;
-  const fPrime = (x: number) => 0.3 * x * x - x + 1;
   const sinWave = (x: number) => amplitude * Math.sin(frequency * x + phase);
   const cosWave = (x: number) => amplitude * Math.cos(frequency * x + phase);
 
@@ -62,7 +98,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.globalAlpha = 0.3;
     
     // Vertical lines
-    for (let x = -width/2; x <= width/2; x += 20) {
+    for (let x = -width/2; x <= width/2; x += gridSpacing) {
       ctx.beginPath();
       ctx.moveTo(x, -height/2);
       ctx.lineTo(x, height/2);
@@ -70,7 +106,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     }
     
     // Horizontal lines
-    for (let y = -height/2; y <= height/2; y += 20) {
+    for (let y = -height/2; y <= height/2; y += gridSpacing) {
       ctx.beginPath();
       ctx.moveTo(-width/2, y);
       ctx.lineTo(width/2, y);
@@ -96,10 +132,39 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.lineTo(0, height/2);
     ctx.stroke();
     
-    // Axis labels
+    // Axis labels and tick marks
     ctx.fillStyle = '#60a5fa';
-    ctx.font = '12px JetBrains Mono';
+    ctx.font = '10px JetBrains Mono';
     ctx.scale(1, -1); // Flip text back
+    
+    // X-axis tick marks and labels
+    for (let i = -10; i <= 10; i++) {
+      if (i !== 0) {
+        const x = i * scale / 10;
+        ctx.fillText(i.toString(), x - 5, 15);
+        ctx.scale(1, -1);
+        ctx.beginPath();
+        ctx.moveTo(x, -5);
+        ctx.lineTo(x, 5);
+        ctx.stroke();
+        ctx.scale(1, -1);
+      }
+    }
+    
+    // Y-axis tick marks and labels
+    for (let i = -10; i <= 10; i++) {
+      if (i !== 0) {
+        const y = i * scale / 10;
+        ctx.fillText(i.toString(), 10, -y + 3);
+        ctx.scale(1, -1);
+        ctx.beginPath();
+        ctx.moveTo(-5, y);
+        ctx.lineTo(5, y);
+        ctx.stroke();
+        ctx.scale(1, -1);
+      }
+    }
+    
     ctx.fillText('x', width/2 - 20, 15);
     ctx.fillText('y', 10, -height/2 + 20);
     ctx.scale(1, -1); // Flip back
@@ -112,15 +177,20 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     
     let started = false;
     for (let px = -width/2; px <= width/2; px += 2) {
-      const x = px / 20; // Scale to mathematical coordinates
-      const y = func(x) * 20; // Scale to canvas coordinates
+      const x = px / scale * 10; // Convert to mathematical coordinates
+      const y = func(x);
       
-      if (Math.abs(y) < height/2) {
-        if (!started) {
-          ctx.moveTo(px, y);
-          started = true;
+      if (!isNaN(y) && Math.abs(y) < 10) {
+        const py = y * scale / 10; // Convert to canvas coordinates
+        if (Math.abs(py) < height/2) {
+          if (!started) {
+            ctx.moveTo(px, py);
+            started = true;
+          } else {
+            ctx.lineTo(px, py);
+          }
         } else {
-          ctx.lineTo(px, y);
+          started = false;
         }
       } else {
         started = false;
@@ -132,7 +202,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   const drawPoint = (ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size: number = 4) => {
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x * 20, y * 20, size, 0, 2 * Math.PI);
+    ctx.arc(x * scale / 10, y * scale / 10, size, 0, 2 * Math.PI);
     ctx.fill();
   };
 
@@ -140,113 +210,130 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
-    ctx.moveTo(x1 * 20, y1 * 20);
-    ctx.lineTo(x2 * 20, y2 * 20);
+    ctx.moveTo(x1 * scale / 10, y1 * scale / 10);
+    ctx.lineTo(x2 * scale / 10, y2 * scale / 10);
     ctx.stroke();
   };
 
   // Visualization modes
   const drawDerivativeVisualization = (ctx: CanvasRenderingContext2D) => {
+    const currentFunc = getCurrentFunction();
+    
     // Draw original function
-    drawFunction(ctx, f, '#10b981', 3);
+    drawFunction(ctx, currentFunc.f, '#10b981', 3);
     
     // Draw derivative function
-    drawFunction(ctx, fPrime, '#f59e0b', 2);
+    drawFunction(ctx, currentFunc.fPrime, '#f59e0b', 2);
     
     // Draw point on original function
-    const y = f(xValue);
-    drawPoint(ctx, xValue, y, '#ef4444', 6);
-    
-    // Draw tangent line
-    const slope = fPrime(xValue);
-    const x1 = xValue - 2;
-    const x2 = xValue + 2;
-    const y1 = y + slope * (x1 - xValue);
-    const y2 = y + slope * (x2 - xValue);
-    drawLine(ctx, x1, y1, x2, y2, '#ef4444', 2);
-    
-    // Draw slope indicator
-    ctx.fillStyle = '#ef4444';
-    ctx.font = '14px JetBrains Mono';
-    ctx.scale(1, -1);
-    ctx.fillText(`f'(${xValue.toFixed(1)}) = ${slope.toFixed(2)}`, -width/2 + 20, height/2 - 30);
-    ctx.scale(1, -1);
+    const y = currentFunc.f(xValue);
+    if (!isNaN(y)) {
+      drawPoint(ctx, xValue, y, '#ef4444', 6);
+      
+      // Draw tangent line
+      const slope = currentFunc.fPrime(xValue);
+      if (!isNaN(slope)) {
+        const x1 = xValue - 3;
+        const x2 = xValue + 3;
+        const y1 = y + slope * (x1 - xValue);
+        const y2 = y + slope * (x2 - xValue);
+        drawLine(ctx, x1, y1, x2, y2, '#ef4444', 2);
+        
+        // Draw slope indicator
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '12px JetBrains Mono';
+        ctx.scale(1, -1);
+        ctx.fillText(`f'(${xValue.toFixed(1)}) = ${slope.toFixed(3)}`, -width/2 + 20, height/2 - 30);
+        ctx.fillText(`Point: (${xValue.toFixed(1)}, ${y.toFixed(3)})`, -width/2 + 20, height/2 - 50);
+        ctx.scale(1, -1);
+      }
+    }
   };
 
   const drawLimitVisualization = (ctx: CanvasRenderingContext2D) => {
+    const currentFunc = getCurrentFunction();
+    
     // Draw function
-    drawFunction(ctx, f, '#10b981', 3);
+    drawFunction(ctx, currentFunc.f, '#10b981', 3);
     
     // Draw approaching point
-    const approachX = xValue + hValue * Math.cos(animationTime);
-    const approachY = f(approachX);
-    drawPoint(ctx, approachX, approachY, '#f59e0b', 5);
+    const approachX = xValue + hValue;
+    const approachY = currentFunc.f(approachX);
+    const targetY = currentFunc.f(xValue);
     
-    // Draw target point
-    const targetY = f(xValue);
-    drawPoint(ctx, xValue, targetY, '#ef4444', 6);
-    
-    // Draw secant line
-    if (Math.abs(hValue) > 0.01) {
-      const slope = (f(approachX) - f(xValue)) / (approachX - xValue);
-      const x1 = Math.min(xValue, approachX) - 1;
-      const x2 = Math.max(xValue, approachX) + 1;
-      const y1 = targetY + slope * (x1 - xValue);
-      const y2 = targetY + slope * (x2 - xValue);
-      drawLine(ctx, x1, y1, x2, y2, '#8b5cf6', 2);
+    if (!isNaN(approachY) && !isNaN(targetY)) {
+      drawPoint(ctx, approachX, approachY, '#f59e0b', 5);
+      drawPoint(ctx, xValue, targetY, '#ef4444', 6);
+      
+      // Draw secant line
+      if (Math.abs(hValue) > 0.001) {
+        const slope = (approachY - targetY) / hValue;
+        const x1 = Math.min(xValue, approachX) - 2;
+        const x2 = Math.max(xValue, approachX) + 2;
+        const y1 = targetY + slope * (x1 - xValue);
+        const y2 = targetY + slope * (x2 - xValue);
+        drawLine(ctx, x1, y1, x2, y2, '#8b5cf6', 2);
+        
+        // Display limit info
+        ctx.fillStyle = '#60a5fa';
+        ctx.font = '12px JetBrains Mono';
+        ctx.scale(1, -1);
+        ctx.fillText(`h = ${hValue.toFixed(4)}`, -width/2 + 20, height/2 - 30);
+        ctx.fillText(`Secant slope = ${slope.toFixed(4)}`, -width/2 + 20, height/2 - 50);
+        ctx.fillText(`Limit (h→0) = ${currentFunc.fPrime(xValue).toFixed(4)}`, -width/2 + 20, height/2 - 70);
+        ctx.scale(1, -1);
+      }
     }
-    
-    // Display limit info
-    ctx.fillStyle = '#60a5fa';
-    ctx.font = '12px JetBrains Mono';
-    ctx.scale(1, -1);
-    ctx.fillText(`h = ${hValue.toFixed(3)}`, -width/2 + 20, height/2 - 30);
-    ctx.fillText(`lim as h→0: ${fPrime(xValue).toFixed(3)}`, -width/2 + 20, height/2 - 50);
-    ctx.scale(1, -1);
   };
 
   const drawTangentVisualization = (ctx: CanvasRenderingContext2D) => {
+    const currentFunc = getCurrentFunction();
+    
     // Draw function
-    drawFunction(ctx, f, '#10b981', 3);
+    drawFunction(ctx, currentFunc.f, '#10b981', 3);
     
     // Draw multiple secant lines approaching tangent
     const baseX = xValue;
-    const baseY = f(baseX);
+    const baseY = currentFunc.f(baseX);
     
-    for (let i = 1; i <= 5; i++) {
-      const h = hValue * i / 5;
-      const secantX = baseX + h;
-      const secantY = f(secantX);
+    if (!isNaN(baseY)) {
+      for (let i = 1; i <= 8; i++) {
+        const h = hValue * i / 8;
+        const secantX = baseX + h;
+        const secantY = currentFunc.f(secantX);
+        
+        if (!isNaN(secantY) && Math.abs(h) > 0.001) {
+          const slope = (secantY - baseY) / h;
+          const x1 = baseX - 3;
+          const x2 = baseX + 3;
+          const y1 = baseY + slope * (x1 - baseX);
+          const y2 = baseY + slope * (x2 - baseX);
+          
+          const alpha = i / 8;
+          ctx.globalAlpha = alpha * 0.6;
+          drawLine(ctx, x1, y1, x2, y2, '#8b5cf6', 1);
+        }
+      }
       
-      if (Math.abs(h) > 0.01) {
-        const slope = (secantY - baseY) / h;
-        const x1 = baseX - 2;
-        const x2 = baseX + 2;
+      ctx.globalAlpha = 1;
+      
+      // Draw final tangent line
+      const slope = currentFunc.fPrime(baseX);
+      if (!isNaN(slope)) {
+        const x1 = baseX - 3;
+        const x2 = baseX + 3;
         const y1 = baseY + slope * (x1 - baseX);
         const y2 = baseY + slope * (x2 - baseX);
-        
-        const alpha = i / 5;
-        ctx.globalAlpha = alpha * 0.7;
-        drawLine(ctx, x1, y1, x2, y2, '#8b5cf6', 1);
+        drawLine(ctx, x1, y1, x2, y2, '#ef4444', 3);
       }
+      
+      drawPoint(ctx, baseX, baseY, '#ef4444', 6);
     }
-    
-    ctx.globalAlpha = 1;
-    
-    // Draw final tangent line
-    const slope = fPrime(baseX);
-    const x1 = baseX - 2;
-    const x2 = baseX + 2;
-    const y1 = baseY + slope * (x1 - baseX);
-    const y2 = baseY + slope * (x2 - baseX);
-    drawLine(ctx, x1, y1, x2, y2, '#ef4444', 3);
-    
-    drawPoint(ctx, baseX, baseY, '#ef4444', 6);
   };
 
   const drawCircleVisualization = (ctx: CanvasRenderingContext2D) => {
-    const radius = 100;
-    const angle = animationTime;
+    const radius = Math.min(width, height) * 0.3;
+    const angle = angleValue;
     
     // Draw unit circle
     ctx.strokeStyle = '#10b981';
@@ -255,25 +342,67 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.arc(0, 0, radius, 0, 2 * Math.PI);
     ctx.stroke();
     
-    // Draw angle line
+    // Calculate point on circle
     const x = radius * Math.cos(angle);
     const y = radius * Math.sin(angle);
-    drawLine(ctx, 0, 0, x/20, y/20, '#ef4444', 2);
+    
+    // Draw angle arc
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.3, 0, angle);
+    ctx.stroke();
+    
+    // Draw radius line
+    drawLine(ctx, 0, 0, x / scale * 10, y / scale * 10, '#ef4444', 3);
     
     // Draw point on circle
-    drawPoint(ctx, x/20, y/20, '#ef4444', 6);
+    drawPoint(ctx, x / scale * 10, y / scale * 10, '#ef4444', 8);
     
-    // Draw projections
-    drawLine(ctx, x/20, 0, x/20, y/20, '#f59e0b', 2); // sin
-    drawLine(ctx, 0, 0, x/20, 0, '#8b5cf6', 2); // cos
+    // Draw triangle (projections)
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(x, 0);
+    ctx.lineTo(x, y);
+    ctx.lineTo(0, 0);
+    ctx.stroke();
+    
+    // Draw projection lines
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(0, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
     
     // Labels
     ctx.fillStyle = '#60a5fa';
-    ctx.font = '12px JetBrains Mono';
+    ctx.font = '14px JetBrains Mono';
     ctx.scale(1, -1);
-    ctx.fillText(`θ = ${angle.toFixed(2)}`, -width/2 + 20, height/2 - 30);
-    ctx.fillText(`sin(θ) = ${Math.sin(angle).toFixed(3)}`, -width/2 + 20, height/2 - 50);
-    ctx.fillText(`cos(θ) = ${Math.cos(angle).toFixed(3)}`, -width/2 + 20, height/2 - 70);
+    
+    const degrees = (angle * 180 / Math.PI) % 360;
+    const radians = angle % (2 * Math.PI);
+    
+    ctx.fillText(`θ = ${radians.toFixed(3)} rad`, -width/2 + 20, height/2 - 30);
+    ctx.fillText(`θ = ${degrees.toFixed(1)}°`, -width/2 + 20, height/2 - 50);
+    ctx.fillText(`sin(θ) = ${Math.sin(angle).toFixed(3)}`, -width/2 + 20, height/2 - 70);
+    ctx.fillText(`cos(θ) = ${Math.cos(angle).toFixed(3)}`, -width/2 + 20, height/2 - 90);
+    ctx.fillText(`tan(θ) = ${Math.tan(angle).toFixed(3)}`, -width/2 + 20, height/2 - 110);
+    
+    // Label the sides of the triangle
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('cos(θ)', x/2 - 20, 20);
+    ctx.fillText('sin(θ)', x + 10, y/2);
+    ctx.fillText('1', x/2 - 10, y/2 + 15);
+    
     ctx.scale(1, -1);
   };
 
@@ -293,7 +422,21 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     drawPoint(ctx, currentX, cosineY, '#10b981', 6);
     
     // Draw vertical line
-    drawLine(ctx, currentX, -height/40, currentX, height/40, '#60a5fa', 1);
+    drawLine(ctx, currentX, -10, currentX, 10, '#60a5fa', 1);
+    
+    // Draw horizontal reference lines
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(-width/2, sineY * scale / 10);
+    ctx.lineTo(currentX * scale / 10, sineY * scale / 10);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-width/2, cosineY * scale / 10);
+    ctx.lineTo(currentX * scale / 10, cosineY * scale / 10);
+    ctx.stroke();
+    ctx.setLineDash([]);
     
     // Labels
     ctx.fillStyle = '#60a5fa';
@@ -302,6 +445,9 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     ctx.fillText(`A = ${amplitude}`, -width/2 + 20, height/2 - 30);
     ctx.fillText(`f = ${frequency}`, -width/2 + 20, height/2 - 50);
     ctx.fillText(`φ = ${phase.toFixed(2)}`, -width/2 + 20, height/2 - 70);
+    ctx.fillText(`x = ${currentX.toFixed(2)}`, -width/2 + 20, height/2 - 90);
+    ctx.fillText(`sin = ${sineY.toFixed(3)}`, -width/2 + 20, height/2 - 110);
+    ctx.fillText(`cos = ${cosineY.toFixed(3)}`, -width/2 + 20, height/2 - 130);
     ctx.scale(1, -1);
   };
 
@@ -345,7 +491,13 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
   useEffect(() => {
     if (isAnimating) {
       const animate = () => {
-        setAnimationTime(prev => prev + 0.05);
+        if (mode === 'circle') {
+          setAngleValue(prev => (prev + 0.02) % (2 * Math.PI));
+        } else if (mode === 'limit') {
+          setHValue(prev => Math.max(0.001, prev * 0.98));
+        } else {
+          setAnimationTime(prev => prev + 0.05);
+        }
         animationRef.current = requestAnimationFrame(animate);
       };
       animationRef.current = requestAnimationFrame(animate);
@@ -360,15 +512,17 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isAnimating]);
+  }, [isAnimating, mode]);
 
   // Render when parameters change
   useEffect(() => {
     render();
-  }, [mode, xValue, hValue, amplitude, frequency, phase, animationTime]);
+  }, [mode, xValue, hValue, amplitude, frequency, phase, animationTime, angleValue, selectedFunction]);
 
   const resetAnimation = () => {
     setAnimationTime(0);
+    setAngleValue(Math.PI / 4);
+    setHValue(1);
     setIsAnimating(false);
   };
 
@@ -376,7 +530,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
     <div className="border-2 border-blue-500 bg-black p-4">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-white font-mono mb-3 border-l-4 border-blue-500 pl-3">
-          INTERACTIVE CALCULUS VISUALIZER
+          INTERACTIVE CALCULUS VISUALIZER v2.0
         </h3>
         
         {/* Mode Selection */}
@@ -438,19 +592,44 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
           </button>
         </div>
 
+        {/* Function Selection for derivative, limit, and tangent modes */}
+        {(mode === 'derivative' || mode === 'limit' || mode === 'tangent') && (
+          <div className="mb-4">
+            <label className="block text-xs font-bold text-blue-400 font-mono mb-2">
+              SELECT FUNCTION:
+            </label>
+            <select
+              value={selectedFunction}
+              onChange={(e) => setSelectedFunction(e.target.value as keyof typeof functions)}
+              className="w-full p-2 border-2 border-blue-500 bg-black text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              {Object.entries(functions).map(([key, func]) => (
+                <option key={key} value={key}>
+                  {func.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Animation Controls */}
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setIsAnimating(!isAnimating)}
-            className="px-3 py-1 border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white font-mono text-xs transition-colors duration-200"
+            className={`px-3 py-1 border-2 font-mono text-xs transition-colors duration-200 ${
+              isAnimating 
+                ? 'border-red-500 bg-red-600 hover:bg-red-700 text-white' 
+                : 'border-green-500 bg-green-600 hover:bg-green-700 text-white'
+            }`}
           >
-            {isAnimating ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+            {isAnimating ? 'STOP' : 'ANIMATE'}
           </button>
           <button
             onClick={resetAnimation}
             className="px-3 py-1 border-2 border-yellow-500 bg-yellow-600 hover:bg-yellow-700 text-white font-mono text-xs transition-colors duration-200"
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-3 h-3 inline mr-1" />
+            RESET
           </button>
         </div>
       </div>
@@ -465,7 +644,7 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
       </div>
 
       {/* Interactive Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {(mode === 'derivative' || mode === 'limit' || mode === 'tangent') && (
           <>
             <div>
@@ -474,29 +653,46 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               </label>
               <input
                 type="range"
-                min="-5"
-                max="5"
+                min="-8"
+                max="8"
                 step="0.1"
                 value={xValue}
                 onChange={(e) => setXValue(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-700 border-2 border-blue-500 appearance-none slider"
+                className="w-full slider"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-blue-400 font-mono mb-1">
-                H VALUE: {hValue.toFixed(3)}
+                H VALUE: {hValue.toFixed(4)}
               </label>
               <input
                 type="range"
                 min="0.001"
-                max="2"
+                max="3"
                 step="0.001"
                 value={hValue}
                 onChange={(e) => setHValue(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-700 border-2 border-blue-500 appearance-none slider"
+                className="w-full slider"
               />
             </div>
           </>
+        )}
+
+        {mode === 'circle' && (
+          <div>
+            <label className="block text-xs font-bold text-blue-400 font-mono mb-1">
+              ANGLE: {angleValue.toFixed(3)} rad ({(angleValue * 180 / Math.PI).toFixed(1)}°)
+            </label>
+            <input
+              type="range"
+              min="0"
+              max={2 * Math.PI}
+              step="0.01"
+              value={angleValue}
+              onChange={(e) => setAngleValue(parseFloat(e.target.value))}
+              className="w-full slider"
+            />
+          </div>
         )}
 
         {mode === 'wave' && (
@@ -508,11 +704,11 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               <input
                 type="range"
                 min="0.1"
-                max="3"
+                max="5"
                 step="0.1"
                 value={amplitude}
                 onChange={(e) => setAmplitude(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-700 border-2 border-blue-500 appearance-none slider"
+                className="w-full slider"
               />
             </div>
             <div>
@@ -522,25 +718,25 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               <input
                 type="range"
                 min="0.1"
-                max="3"
+                max="5"
                 step="0.1"
                 value={frequency}
                 onChange={(e) => setFrequency(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-700 border-2 border-blue-500 appearance-none slider"
+                className="w-full slider"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-blue-400 font-mono mb-1">
-                PHASE: {phase.toFixed(2)}
+                PHASE: {phase.toFixed(2)} rad
               </label>
               <input
                 type="range"
                 min="0"
-                max="6.28"
+                max={2 * Math.PI}
                 step="0.1"
                 value={phase}
                 onChange={(e) => setPhase(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-700 border-2 border-blue-500 appearance-none slider"
+                className="w-full slider"
               />
             </div>
           </>
@@ -549,21 +745,24 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
 
       {/* Legend */}
       <div className="mt-4 p-3 border-2 border-blue-700 bg-blue-950">
-        <h4 className="text-sm font-bold text-blue-400 font-mono mb-2">LEGEND:</h4>
-        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+        <h4 className="text-sm font-bold text-blue-400 font-mono mb-2">LEGEND & INFO:</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
           {mode === 'derivative' && (
             <>
               <div className="flex items-center">
                 <div className="w-4 h-1 bg-green-500 mr-2"></div>
-                <span className="text-green-400">f(x) = 0.1x³ - 0.5x² + x + 1</span>
+                <span className="text-green-400">Original Function f(x)</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-1 bg-yellow-500 mr-2"></div>
-                <span className="text-yellow-400">f'(x) = 0.3x² - x + 1</span>
+                <span className="text-yellow-400">Derivative f'(x)</span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
                 <span className="text-red-400">Point & Tangent Line</span>
+              </div>
+              <div className="text-gray-400">
+                Slope = f'(x) = tangent line steepness
               </div>
             </>
           )}
@@ -575,11 +774,33 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                <span className="text-yellow-400">Approaching Point</span>
+                <span className="text-yellow-400">Approaching Point (x+h)</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-1 bg-purple-500 mr-2"></div>
                 <span className="text-purple-400">Secant Line</span>
+              </div>
+              <div className="text-gray-400">
+                As h→0, secant slope → derivative
+              </div>
+            </>
+          )}
+          {mode === 'tangent' && (
+            <>
+              <div className="flex items-center">
+                <div className="w-4 h-1 bg-green-500 mr-2"></div>
+                <span className="text-green-400">Function f(x)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-1 bg-purple-500 mr-2"></div>
+                <span className="text-purple-400">Secant Lines</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-1 bg-red-500 mr-2"></div>
+                <span className="text-red-400">Final Tangent Line</span>
+              </div>
+              <div className="text-gray-400">
+                Watch secants become tangent
               </div>
             </>
           )}
@@ -587,11 +808,18 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
             <>
               <div className="flex items-center">
                 <div className="w-4 h-1 bg-red-500 mr-2"></div>
-                <span className="text-red-400">sin(θ)</span>
+                <span className="text-red-400">Radius & sin(θ)</span>
               </div>
               <div className="flex items-center">
-                <div className="w-4 h-1 bg-purple-500 mr-2"></div>
-                <span className="text-purple-400">cos(θ)</span>
+                <div className="w-4 h-1 bg-yellow-500 mr-2"></div>
+                <span className="text-yellow-400">Triangle & cos(θ)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-1 bg-blue-500 mr-2"></div>
+                <span className="text-blue-400">Angle Arc</span>
+              </div>
+              <div className="text-gray-400">
+                Unit circle: radius = 1, shows all trig ratios
               </div>
             </>
           )}
@@ -599,11 +827,18 @@ const CalculusVisualizer: React.FC<VisualizerProps> = ({
             <>
               <div className="flex items-center">
                 <div className="w-4 h-1 bg-red-500 mr-2"></div>
-                <span className="text-red-400">sin wave</span>
+                <span className="text-red-400">sin wave: A·sin(fx + φ)</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-1 bg-green-500 mr-2"></div>
-                <span className="text-green-400">cos wave</span>
+                <span className="text-green-400">cos wave: A·cos(fx + φ)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                <span className="text-blue-400">Current position</span>
+              </div>
+              <div className="text-gray-400">
+                A=amplitude, f=frequency, φ=phase shift
               </div>
             </>
           )}
