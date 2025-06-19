@@ -90,6 +90,25 @@ function App() {
               • Upload images to AI for problem analysis
             </p>
           </div>
+
+          {/* Built with Bolt Badge */}
+          <div className="mt-8 flex justify-center">
+            <a 
+              href="https://bolt.new" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 border-2 border-purple-500 bg-purple-900 hover:bg-purple-800 text-purple-300 hover:text-purple-200 font-mono text-xs transition-colors duration-200 group"
+            >
+              <svg 
+                className="w-4 h-4 mr-2 group-hover:animate-pulse" 
+                viewBox="0 0 24 24" 
+                fill="currentColor"
+              >
+                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              BUILT WITH BOLT.NEW
+            </a>
+          </div>
         </main>
         
         {/* Resize Handle */}
